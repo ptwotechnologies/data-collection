@@ -1,130 +1,28 @@
+import React from 'react';
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// Indian states and districts data
-const indianStates = [
-  {
-    state: 'Andhra Pradesh',
-    districts: ['Anantapur', 'Chittoor', 'East Godavari', 'Guntur', 'Krishna'],
-  },
-  {
-    state: 'Karnataka',
-    districts: ['Bangalore', 'Mysore', 'Hubli', 'Mangalore', 'Belgaum'],
-  },
-  {
-    state: 'Tamil Nadu',
-    districts: ['Chennai', 'Coimbatore', 'Madurai', 'Salem', 'Tirunelveli'],
-  },
-  {
-    state: 'Maharashtra',
-    districts: ['Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik'],
-  },
-  {
-    state: 'Kerala',
-    districts: [
-      'Thiruvananthapuram',
-      'Kochi',
-      'Kozhikode',
-      'Thrissur',
-      'Kollam',
-    ],
-  },
-];
-
-// Taluk data
-const taluks = {
-  Anantapur: ['Anantapur', 'Dharmavaram', 'Kadiri', 'Kalyanadurgam'],
-  Chittoor: ['Chittoor', 'Tirupati', 'Madanapalle', 'Punganur'],
-  Bangalore: ['Bangalore North', 'Bangalore South', 'Anekal', 'Doddaballapur'],
-  Mysore: ['Mysore', 'Nanjangud', 'T.Narasipura', 'Hunsur'],
-  Chennai: ['Chennai North', 'Chennai South', 'Chennai Central', 'Ambattur'],
-  Coimbatore: [
-    'Coimbatore North',
-    'Coimbatore South',
-    'Mettupalayam',
-    'Pollachi',
-  ],
-  Mumbai: ['Mumbai City', 'Mumbai Suburban', 'Borivali', 'Andheri'],
-  Pune: ['Pune City', 'Haveli', 'Mulshi', 'Maval'],
-  Thiruvananthapuram: [
-    'Thiruvananthapuram',
-    'Neyyattinkara',
-    'Nedumangad',
-    'Chirayinkeezhu',
-  ],
-  Kochi: ['Kochi', 'Kanayannur', 'Muvattupuzha', 'Aluva'],
-};
-
-const backdropVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
-};
-
-const modalVariants = {
-  hidden: { y: -50, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { type: 'spring', stiffness: 300, damping: 25 },
-  },
-  exit: { y: 50, opacity: 0 },
-};
+import RegisterModal from './RegisterModal';
+import LoginForm from './LoginForm';
 
 export default function ReligiousPortal() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    jobRole: '',
-    jobDescription: '',
-    state: '',
-    district: '',
-    taluk: '',
-  });
-  const [availableDistricts, setAvailableDistricts] = useState([]);
-  const [availableTaluks, setAvailableTaluks] = useState([]);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
+  const handleOpenRegister = () => {
+    setIsRegisterOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCloseRegister = () => {
+    setIsRegisterOpen(false);
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-
-    if (name === 'state') {
-      const stateData = indianStates.find((s) => s.state === value);
-      setAvailableDistricts(stateData ? stateData.districts : []);
-      setFormData((prev) => ({
-        ...prev,
-        district: '',
-        taluk: '',
-      }));
-    }
-
-    if (name === 'district') {
-      setAvailableTaluks(taluks[value] || []);
-      setFormData((prev) => ({
-        ...prev,
-        taluk: '',
-      }));
-    }
+  const handleOpenLogin = () => {
+    setIsLoginOpen(true);
   };
 
-  const handleSubmit = (e) => {
-    if (e) e.preventDefault();
-    console.log('Form submitted:', formData);
-    alert('Form submitted successfully!');
-    handleCloseModal();
+  const handleCloseLogin = () => {
+    setIsLoginOpen(false);
   };
 
   return (
@@ -160,289 +58,41 @@ export default function ReligiousPortal() {
             enlightenment. Register to receive updates on events, rituals, and
             gatherings.
           </motion.p>
-
-          <motion.button
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleOpenModal}
-            className="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
-          >
-            Register Now
-          </motion.button>
+          <div className="flex justify-center space-x-4 ">
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleOpenRegister}
+              className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+            >
+              Register Now
+            </motion.button>
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleOpenLogin}
+              className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+            >
+              Sign In
+            </motion.button>
+          </div>
         </div>
       </div>
 
-      {/* Modal Form */}
+      {/* Modal Forms */}
       <AnimatePresence>
-        {isModalOpen && (
-          <motion.div
-            className="fixed inset-0 flex items-center justify-center z-50 p-4"
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
-            variants={backdropVariants}
-          >
-            <motion.div
-              className="absolute inset-0 bg-black bg-opacity-70"
-              onClick={handleCloseModal}
-            ></motion.div>
-
-            <motion.div
-              className="relative bg-gradient-to-br from-[#1e0d24] to-[#3a1d44] rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden border border-purple-500/20"
-              variants={modalVariants}
-            >
-              <div className="flex justify-between items-center p-6 border-b border-purple-700/30">
-                <h2 className="text-2xl font-bold text-amber-100">
-                  Registration Form
-                </h2>
-                <motion.button
-                  onClick={handleCloseModal}
-                  className="text-amber-200 hover:text-amber-100"
-                  whileHover={{ rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <X size={24} />
-                </motion.button>
-              </div>
-
-              <div className="p-6">
-                <form onSubmit={handleSubmit}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Personal Information */}
-                    <div className="space-y-4">
-                      <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <label
-                          htmlFor="name"
-                          className="block text-amber-100 mb-2 font-medium"
-                        >
-                          Full Name
-                        </label>
-                        <input
-                          type="text"
-                          id="name"
-                          name="name"
-                          value={formData.name}
-                          onChange={handleChange}
-                          required
-                          className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
-                        />
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: 0.1 }}
-                      >
-                        <label
-                          htmlFor="phone"
-                          className="block text-amber-100 mb-2 font-medium"
-                        >
-                          Phone Number
-                        </label>
-                        <input
-                          type="tel"
-                          id="phone"
-                          name="phone"
-                          value={formData.phone}
-                          onChange={handleChange}
-                          required
-                          className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
-                        />
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: 0.2 }}
-                      >
-                        <label
-                          htmlFor="email"
-                          className="block text-amber-100 mb-2 font-medium"
-                        >
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          id="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          required
-                          className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
-                        />
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: 0.3 }}
-                      >
-                        <label
-                          htmlFor="jobRole"
-                          className="block text-amber-100 mb-2 font-medium"
-                        >
-                          Job Role
-                        </label>
-                        <select
-                          id="jobRole"
-                          name="jobRole"
-                          value={formData.jobRole}
-                          onChange={handleChange}
-                          required
-                          className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all appearance-none"
-                        >
-                          <option value="">Select Job Role</option>
-                          <option value="private">Private</option>
-                          <option value="business">Business</option>
-                          <option value="agriculture">Agriculture</option>
-                          <option value="government">Government</option>
-                          <option value="selfEmployed">Self Employed</option>
-                          <option value="others">Others</option>
-                        </select>
-                      </motion.div>
-                    </div>
-
-                    {/* Location and Job Description */}
-                    <div className="space-y-4">
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <label
-                          htmlFor="state"
-                          className="block text-amber-100 mb-2 font-medium"
-                        >
-                          State
-                        </label>
-                        <select
-                          id="state"
-                          name="state"
-                          value={formData.state}
-                          onChange={handleChange}
-                          required
-                          className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all appearance-none"
-                        >
-                          <option value="">Select State</option>
-                          {indianStates.map((stateData) => (
-                            <option
-                              key={stateData.state}
-                              value={stateData.state}
-                            >
-                              {stateData.state}
-                            </option>
-                          ))}
-                        </select>
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: 0.1 }}
-                      >
-                        <label
-                          htmlFor="district"
-                          className="block text-amber-100 mb-2 font-medium"
-                        >
-                          District
-                        </label>
-                        <select
-                          id="district"
-                          name="district"
-                          value={formData.district}
-                          onChange={handleChange}
-                          required
-                          disabled={!formData.state}
-                          className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <option value="">Select District</option>
-                          {availableDistricts.map((district) => (
-                            <option key={district} value={district}>
-                              {district}
-                            </option>
-                          ))}
-                        </select>
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: 0.2 }}
-                      >
-                        <label
-                          htmlFor="taluk"
-                          className="block text-amber-100 mb-2 font-medium"
-                        >
-                          Taluk
-                        </label>
-                        <select
-                          id="taluk"
-                          name="taluk"
-                          value={formData.taluk}
-                          onChange={handleChange}
-                          required
-                          disabled={!formData.district}
-                          className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <option value="">Select Taluk</option>
-                          {availableTaluks.map((taluk) => (
-                            <option key={taluk} value={taluk}>
-                              {taluk}
-                            </option>
-                          ))}
-                        </select>
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: 0.3 }}
-                      >
-                        <label
-                          htmlFor="jobDescription"
-                          className="block text-amber-100 mb-2 font-medium"
-                        >
-                          Job Description
-                        </label>
-                        <textarea
-                          id="jobDescription"
-                          name="jobDescription"
-                          value={formData.jobDescription}
-                          onChange={handleChange}
-                          rows="3"
-                          className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
-                        ></textarea>
-                      </motion.div>
-                    </div>
-                  </div>
-
-                  <motion.div
-                    className="mt-8 text-center"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.4 }}
-                  >
-                    <motion.button
-                      type="submit"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-[#1e0d24] font-bold rounded-lg shadow-lg transition-all"
-                    >
-                      Submit Registration
-                    </motion.button>
-                  </motion.div>
-                </form>
-              </div>
-            </motion.div>
-          </motion.div>
+        {isRegisterOpen && (
+          <RegisterModal handleCloseModal={handleCloseRegister} />
         )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {isLoginOpen && <LoginForm handleCloseLogin={handleCloseLogin} />}
       </AnimatePresence>
     </div>
   );
