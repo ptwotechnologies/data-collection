@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: 'https://data-collection-40bw.onrender.com',
+    origin: 'https://data-collection-virid-xi.vercel.app',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
