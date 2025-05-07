@@ -1,13 +1,13 @@
-import axios from "axios";
-const API_BASE_URL = "http://localhost:8888/api/"
-const token = localStorage.getItem("token");
+import axios from 'axios';
+const API_BASE_URL = 'https://data-collection-mig2.onrender.com';
+const token = localStorage.getItem('token');
 
 const axiosInstance = axios.create({
   baseURL: `${API_BASE_URL}`,
   headers: {
     Authorization: `Bearer ${token}`,
   },
-  withCredentials: true, 
+  withCredentials: true,
 });
 
 export default axiosInstance;
