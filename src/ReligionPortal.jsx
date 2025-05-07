@@ -1,13 +1,29 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import RegisterModal from './RegisterModal';
 import LoginForm from './LoginForm';
 
+import { useNavigate } from 'react-router-dom';
 export default function ReligiousPortal() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsAdminLoggedIn(!!token); // true if token exists
+  }, []);
+
+  const handleClick = () => {
+    if (isAdminLoggedIn) {
+      navigate('/admin');
+    } else {
+      navigate('/'); // Or trigger your login modal
+    }
+  };
 
   const handleOpenRegister = () => {
     setIsRegisterOpen(true);
@@ -29,8 +45,9 @@ export default function ReligiousPortal() {
     <div className="relative min-h-screen w-full bg-[#2a1533]">
       {/* Banner Section */}
       <div
-        className="relative min-h-screen w-full flex flex-col items-center justify-center text-center p-4 md:p-8"
+        className="relative min-h-screen w-full flex flex-col items-center justify-center text-center p-8"
         style={{
+          backgroundColor: '#2a1533',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundBlend: 'overlay',
@@ -38,12 +55,12 @@ export default function ReligiousPortal() {
       >
         <div className="absolute inset-0 bg-[#2a1533] bg-opacity-70"></div>
 
-        <div className="relative z-10 px-4">
+        <div className="relative z-10">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-3xl md:text-5xl font-bold text-amber-100 mb-4 md:mb-6"
+            className="text-5xl font-bold text-amber-100 mb-6"
           >
             Welcome to Our Spiritual Journey
           </motion.h1>
@@ -51,13 +68,13 @@ export default function ReligiousPortal() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-base md:text-xl text-amber-50 mb-6 md:mb-8 max-w-2xl mx-auto"
+            className="text-xl text-amber-50 mb-8 max-w-2xl mx-auto"
           >
             Join our community of devotees and explore the path to spiritual
             enlightenment. Register to receive updates on events, rituals, and
             gatherings.
           </motion.p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex justify-center space-x-4 ">
             <motion.button
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -65,7 +82,7 @@ export default function ReligiousPortal() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleOpenRegister}
-              className="px-6 md:px-8 cursor-pointer py-2 md:py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+              className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
             >
               Register Now
             </motion.button>
@@ -75,10 +92,13 @@ export default function ReligiousPortal() {
               transition={{ duration: 0.5, delay: 0.4 }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={handleOpenLogin}
-              className="px-6 md:px-8 cursor-pointer py-2 md:py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+              onClick={() => {
+                handleClick();
+                handleOpenLogin();
+              }}
+              className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
             >
-              Admin Sign In
+              {isAdminLoggedIn ? 'Go to Dashboard' : 'Admin Sign In'}
             </motion.button>
           </div>
         </div>
