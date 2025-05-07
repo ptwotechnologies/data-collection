@@ -2,7 +2,7 @@ import React from 'react';
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { toast } from 'react-toastify';
 // Indian states and districts data
 const indianStates = [
   {
@@ -113,12 +113,40 @@ function RegisterModal({ handleCloseModal }) {
     }
   };
 
-  const handleSubmit = (e) => {
-    if (e) e.preventDefault();
-    console.log('Form submitted:', formData);
-    alert('Form submitted successfully!');
-    handleCloseModal();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    const payload = {
+      fullName: formData.name,
+      phoneNumber: formData.phone,
+      emailAddress: formData.email,
+      jobType: formData.jobType,
+      businessType: formData.jobRole,
+      state: formData.state,
+      district: formData.district,
+      taluk: formData.taluk,
+      jobDescription: formData.jobDescription,
+    };
+  
+    try {
+      const res = await fetch('http://localhost:8888/api/form', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      if (!res.ok) throw new Error('Failed to submit form');
+  
+      alert('Form submitted successfully!');
+      handleCloseModal();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Failed to submit the form');
+    }
   };
+  
 
   return (
     <motion.div

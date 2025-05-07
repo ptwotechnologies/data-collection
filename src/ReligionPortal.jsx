@@ -79,7 +79,7 @@ export default function ReligiousPortal() {
               onClick={handleOpenLogin}
               className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
             >
-              Sign In
+             Admin Sign In
             </motion.button>
           </div>
         </div>

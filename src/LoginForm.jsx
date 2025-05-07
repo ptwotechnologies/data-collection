@@ -1,15 +1,8 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { X, User, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useNavigate, Link } from 'react-router-dom';
-
-// Mock credentials
-const validCredentials = {
-  username: 'admin',
-  password: 'password123',
-};
-
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../src/context/axiosInstance'
 const backdropVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1 },
@@ -26,43 +19,47 @@ const modalVariants = {
 };
 
 function LoginForm({ handleCloseLogin }) {
-  const [error, setError] = useState('');
-  const [loginSuccess, setLoginSuccess] = useState(false);
   const [formData, setFormData] = useState({
-    username: validCredentials.username, // Pre-filled
-    password: validCredentials.password, // Pre-filled
+    email: '',
+    password: '',
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
     // Clear error when user types
     if (error) setError('');
   };
 
-  const handleSubmit = (e) => {
-    if (e) e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-    if (
-      formData.username === validCredentials.username &&
-      formData.password === validCredentials.password
-    ) {
-      console.log('Login successful');
+    try {
+      const response = await axiosInstance.post('/admin/login', formData); 
+      console.log("REponse data" , response)
+      const { token } = response.data;
+
+      // On successful login, store the token and navigate
+      localStorage.setItem('token', token);
       setLoginSuccess(true);
       setTimeout(() => {
         handleCloseLogin();
-        // You could redirect here with window.location if needed
-        // window.location.href = '/admin';
+        navigate('/admin');
       }, 1500);
-    } else {
-      setError('Invalid username or password');
+    } catch (err) {
+      setLoading(false);
+      if (err.response) {
+        setError(err.response.data.error || 'Login failed. Please try again.');
+      } else {
+        setError('Server error. Please try again later.');
+      }
     }
   };
-
-  const navigate = useNavigate();
 
   return (
     <motion.div
@@ -101,10 +98,7 @@ function LoginForm({ handleCloseLogin }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <label
-                  htmlFor="username"
-                  className="block text-amber-100 mb-2 font-medium"
-                >
+                <label htmlFor="email" className="block text-amber-100 mb-2 font-medium">
                   Username
                 </label>
                 <div className="relative">
@@ -113,9 +107,9 @@ function LoginForm({ handleCloseLogin }) {
                   </div>
                   <input
                     type="text"
-                    id="username"
-                    name="username"
-                    value={formData.username}
+                    id="email"
+                    name="email"
+                    value={formData.email}
                     onChange={handleChange}
                     required
                     className="w-full pl-10 px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
@@ -128,10 +122,7 @@ function LoginForm({ handleCloseLogin }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
               >
-                <label
-                  htmlFor="password"
-                  className="block text-amber-100 mb-2 font-medium"
-                >
+                <label htmlFor="password" className="block text-amber-100 mb-2 font-medium">
                   Password
                 </label>
                 <div className="relative">
@@ -175,32 +166,16 @@ function LoginForm({ handleCloseLogin }) {
                     Login successful! Redirecting...
                   </motion.div>
                 ) : (
-                  <Link to="/admin">
-                    <motion.button
-                      type="submit"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={navigate('/admin')}
-                      className="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-[#1e0d24] font-bold rounded-lg shadow-lg transition-all w-full"
-                    >
-                      Sign In
-                    </motion.button>
-                  </Link>
+                  <motion.button
+                    type="submit"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    disabled={loading}
+                    className={`px-8 py-3 ${loading ? 'bg-gray-400' : 'bg-amber-500'} hover:bg-amber-600 text-[#1e0d24] font-bold rounded-lg shadow-lg transition-all w-full`}
+                  >
+                    {loading ? 'Logging In...' : 'Admin Sign In'}
+                  </motion.button>
                 )}
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="text-center mt-4"
-              >
-                <a
-                  href="#"
-                  className="text-amber-300 text-sm hover:text-amber-200 transition-colors"
-                >
-                  Forgot Password?
-                </a>
               </motion.div>
             </div>
           </form>

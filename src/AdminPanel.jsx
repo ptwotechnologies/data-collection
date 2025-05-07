@@ -11,77 +11,17 @@ import {
   Grid,
   List,
   LogOut,
+  X
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Papa from 'papaparse';
+import { toast } from 'react-toastify';
+import axiosInstance from '../src/context/axiosInstance'
 
-// Dummy user data
-const dummyUsers = [
-  {
-    id: '1',
-    name: 'Rahul Sharma',
-    email: 'rahul@example.com',
-    phone: '9876543210',
-    jobType: 'private',
-    businessType: 'manufacture',
-    state: 'Karnataka',
-    district: 'Bangalore',
-    taluk: 'Bangalore South',
-    createdAt: '2025-05-01T12:30:00Z',
-  },
-  {
-    id: '2',
-    name: 'Priya Patel',
-    email: 'priya@example.com',
-    phone: '8765432109',
-    jobType: 'government',
-    businessType: 'service',
-    state: 'Tamil Nadu',
-    district: 'Chennai',
-    taluk: 'Chennai Central',
-    createdAt: '2025-05-02T10:15:00Z',
-  },
-  {
-    id: '3',
-    name: 'Amit Singh',
-    email: 'amit@example.com',
-    phone: '7654321098',
-    jobType: 'private',
-    businessType: 'service',
-    state: 'Maharashtra',
-    district: 'Mumbai',
-    taluk: 'Mumbai City',
-    createdAt: '2025-05-03T09:45:00Z',
-  },
-  {
-    id: '4',
-    name: 'Deepa Nair',
-    email: 'deepa@example.com',
-    phone: '6543210987',
-    jobType: 'government',
-    businessType: 'manufacture',
-    state: 'Kerala',
-    district: 'Kochi',
-    taluk: 'Kochi',
-    createdAt: '2025-05-03T14:20:00Z',
-  },
-  {
-    id: '5',
-    name: 'Rajesh Kumar',
-    email: 'rajesh@example.com',
-    phone: '5432109876',
-    jobType: 'private',
-    businessType: 'manufacture',
-    state: 'Andhra Pradesh',
-    district: 'Anantapur',
-    taluk: 'Anantapur',
-    createdAt: '2025-05-04T11:05:00Z',
-  },
-];
 
 const AdminPanel = () => {
-  const [users, setUsers] = useState(dummyUsers);
-  const [filteredUsers, setFilteredUsers] = useState(dummyUsers);
+  const [users, setUsers] = useState();
+  const [filteredUsers, setFilteredUsers] = useState();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({
     key: 'name',
@@ -97,19 +37,38 @@ const AdminPanel = () => {
     type: '',
   });
 
+  
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axiosInstance.get('/form'); 
+        console.log("Data" , response.data)
+        setUsers(response.data);
+        setFilteredUsers(response.data);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+        toast.error('Failed to load users');
+      }
+    };
+  
+    fetchUsers();
+  }, [ ]);
+
+
+
   // Search and filter
   useEffect(() => {
     if (searchTerm.trim() === '') {
       setFilteredUsers(users);
     } else {
-      const filtered = users.filter(
-        (user) =>
-          user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.phone.includes(searchTerm) ||
-          user.state.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.district.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = users.filter((user) =>
+        user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.emailAddress?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.phoneNumber?.includes(searchTerm) ||
+        user.state?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.district?.toLowerCase().includes(searchTerm.toLowerCase())
       );
+      
       setFilteredUsers(filtered);
     }
   }, [searchTerm, users]);
@@ -158,18 +117,28 @@ const AdminPanel = () => {
   };
 
   // Handle user deletion
-  const handleDeleteUser = (userId) => {
-    // In a real app, you would call an API to delete the user
-    const updatedUsers = users.filter((user) => user.id !== userId);
-    setUsers(updatedUsers);
-    setFilteredUsers(updatedUsers);
-    showNotification('User deleted successfully');
-
-    if (selectedUser && selectedUser.id === userId) {
-      setSelectedUser(null);
-      setShowUserDetails(false);
+  const handleDeleteUser = async (userId) => {
+    try {
+      await axiosInstance.delete(`/form/${userId}`);
+  
+      // Use _id if that's your identifier
+      const updatedUsers = users.filter((user) => user._id !== userId);
+      setUsers(updatedUsers);
+      setFilteredUsers(updatedUsers);
+  
+      showNotification('User deleted successfully');
+  
+      // Clear selected user if it's the one being deleted
+      if (selectedUser && selectedUser._id === userId) {
+        setSelectedUser(null);
+        setShowUserDetails(false);
+      }
+    } catch (error) {
+      toast.error('Failed to delete user');
+      console.error('Delete Error:', error.response?.data || error.message);
     }
   };
+  
 
   // Export to CSV
   const exportToCSV = () => {
@@ -199,37 +168,28 @@ const AdminPanel = () => {
   };
 
   // Import from CSV
-  const importFromCSV = (event) => {
+  const importFromCSV = async (event) => {
     const file = event.target.files[0];
-
-    if (file) {
+    if (!file) return;
+  
+    const formData = new FormData();
+    formData.append('file', file);
+  
+    try {
       setLoading(true);
-
-      Papa.parse(file, {
-        header: true,
-        complete: (results) => {
-          // Process the imported data
-          const importedData = results.data.map((item, index) => ({
-            ...item,
-            id: item.id || `imported_${index + 1}`,
-          }));
-
-          setUsers(importedData);
-          setFilteredUsers(importedData);
-          setLoading(false);
-          showNotification(
-            `Successfully imported ${importedData.length} users`
-          );
-        },
-        error: (error) => {
-          setLoading(false);
-          showNotification(`Error importing CSV: ${error.message}`, 'error');
-        },
-      });
+      const response = await axiosInstance.post('/form/import/csv', formData);
+      
+      const data = response.data;
+      setUsers(data);
+      setFilteredUsers(data);
+      showNotification(`Successfully imported ${data.length} users`);
+    } catch (error) {
+      console.error('CSV Import Error:', error);
+      showNotification('Failed to import CSV', 'error');
+    } finally {
+      setLoading(false);
+      event.target.value = '';
     }
-
-    // Reset the file input
-    event.target.value = '';
   };
 
   // Format date
@@ -283,7 +243,9 @@ const AdminPanel = () => {
         </nav>
 
         <div className="p-4 border-t border-purple-800/30">
-          <button className="flex items-center px-4 py-3 text-amber-100 hover:bg-purple-900/30 hover:text-amber-200 transition-colors w-full">
+          <button className="flex items-center px-4 py-3 text-amber-100 hover:bg-purple-900/30 hover:text-amber-200 transition-colors w-full"
+          
+          >
             <LogOut size={20} className="mr-3" />
             <span className="hidden lg:inline">Logout</span>
           </button>
@@ -354,7 +316,7 @@ const AdminPanel = () => {
           >
             <div>
               <h3 className="text-lg font-medium text-amber-100">
-                {filteredUsers.length} Users{' '}
+                {filteredUsers?.length} Users{' '}
                 {searchTerm && `(filtered from ${users.length})`}
               </h3>
             </div>
@@ -400,7 +362,7 @@ const AdminPanel = () => {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
             >
-              {filteredUsers.map((user) => (
+              {filteredUsers?.map((user) => (
                 <motion.div
                   key={user.id}
                   whileHover={{ scale: 1.02 }}
@@ -409,7 +371,7 @@ const AdminPanel = () => {
                   <div className="p-5">
                     <div className="flex justify-between items-start mb-3">
                       <h4 className="text-lg font-medium text-amber-200 truncate">
-                        {user.name}
+                        {user.fullName}
                       </h4>
                       <div className="flex gap-2">
                         <button
@@ -419,7 +381,7 @@ const AdminPanel = () => {
                           <Edit size={18} />
                         </button>
                         <button
-                          onClick={() => handleDeleteUser(user.id)}
+                          onClick={() => handleDeleteUser(user._id)}
                           className="text-red-400 hover:text-red-300 transition-colors"
                         >
                           <Trash2 size={18} />
@@ -431,12 +393,12 @@ const AdminPanel = () => {
                       <p className="flex items-center gap-2">
                         <span className="text-purple-300">Email:</span>
                         <span className="text-amber-100 truncate">
-                          {user.email}
+                          {user.emailAddress}
                         </span>
                       </p>
                       <p className="flex items-center gap-2">
                         <span className="text-purple-300">Phone:</span>
-                        <span className="text-amber-100">{user.phone}</span>
+                        <span className="text-amber-100">{user.phoneNumber}</span>
                       </p>
                       <p className="flex items-center gap-2">
                         <span className="text-purple-300">Type:</span>
@@ -450,6 +412,12 @@ const AdminPanel = () => {
                           {user.district}, {user.state}
                         </span>
                       </p>
+                      <p className="flex items-center gap-2">
+                        <span className="text-purple-300">Taluka:</span>
+                        <span className="text-amber-100 truncate">
+                          {user.taluk}
+                        </span>
+                      </p>
                     </div>
 
                     <button
@@ -458,6 +426,7 @@ const AdminPanel = () => {
                     >
                       View Details
                     </button>
+
                   </div>
                 </motion.div>
               ))}
@@ -475,42 +444,42 @@ const AdminPanel = () => {
                     <tr>
                       <th
                         className="px-6 py-4 font-medium cursor-pointer"
-                        onClick={() => requestSort('name')}
+                        onClick={() => requestSort('fullName')}
                       >
                         <div className="flex items-center gap-1">
                           Name
-                          {getSortDirection('name') === 'ascending' && (
+                          {getSortDirection('fullName') === 'ascending' && (
                             <span>↑</span>
                           )}
-                          {getSortDirection('name') === 'descending' && (
+                          {getSortDirection('fullName') === 'descending' && (
                             <span>↓</span>
                           )}
                         </div>
                       </th>
                       <th
                         className="px-6 py-4 font-medium cursor-pointer"
-                        onClick={() => requestSort('email')}
+                        onClick={() => requestSort('emailAddress')}
                       >
                         <div className="flex items-center gap-1">
                           Email
-                          {getSortDirection('email') === 'ascending' && (
+                          {getSortDirection('emailAddress') === 'ascending' && (
                             <span>↑</span>
                           )}
-                          {getSortDirection('email') === 'descending' && (
+                          {getSortDirection('emailAddress') === 'descending' && (
                             <span>↓</span>
                           )}
                         </div>
                       </th>
                       <th
                         className="px-6 py-4 font-medium cursor-pointer"
-                        onClick={() => requestSort('phone')}
+                        onClick={() => requestSort('phoneNumber')}
                       >
                         <div className="flex items-center gap-1">
                           Phone
-                          {getSortDirection('phone') === 'ascending' && (
+                          {getSortDirection('phoneNumber') === 'ascending' && (
                             <span>↑</span>
                           )}
-                          {getSortDirection('phone') === 'descending' && (
+                          {getSortDirection('phoneNumber') === 'descending' && (
                             <span>↓</span>
                           )}
                         </div>
@@ -555,14 +524,15 @@ const AdminPanel = () => {
                           index % 2 === 0 ? 'bg-purple-900/10' : ''
                         }`}
                       >
+                        {console.log("USER" , user)}
                         <td className="px-6 py-4 font-medium text-amber-100">
-                          {user.name}
+                          {user.fullName}
                         </td>
                         <td className="px-6 py-4 text-amber-100/80">
-                          {user.email}
+                          {user.emailAddress}
                         </td>
                         <td className="px-6 py-4 text-amber-100/80">
-                          {user.phone}
+                          {user.phoneNumber}
                         </td>
                         <td className="px-6 py-4 text-amber-100/80 capitalize">
                           {user.jobType} / {user.businessType}
@@ -579,7 +549,7 @@ const AdminPanel = () => {
                               <Edit size={18} />
                             </button>
                             <button
-                              onClick={() => handleDeleteUser(user.id)}
+                              onClick={() => handleDeleteUser(user._id)}
                               className="text-red-400 hover:text-red-300 transition-colors"
                             >
                               <Trash2 size={18} />
@@ -625,15 +595,15 @@ const AdminPanel = () => {
                 <div className="bg-purple-900/20 p-4 rounded-lg space-y-3">
                   <div>
                     <p className="text-sm text-purple-300">Full Name</p>
-                    <p className="text-amber-100">{selectedUser.name}</p>
+                    <p className="text-amber-100">{selectedUser.fullName}</p>
                   </div>
                   <div>
                     <p className="text-sm text-purple-300">Email Address</p>
-                    <p className="text-amber-100">{selectedUser.email}</p>
+                    <p className="text-amber-100">{selectedUser.emailAddress}</p>
                   </div>
                   <div>
                     <p className="text-sm text-purple-300">Phone Number</p>
-                    <p className="text-amber-100">{selectedUser.phone}</p>
+                    <p className="text-amber-100">{selectedUser.phoneNumber}</p>
                   </div>
                 </div>
               </div>
@@ -689,7 +659,7 @@ const AdminPanel = () => {
                   </div>
                   <div>
                     <p className="text-sm text-purple-300">User ID</p>
-                    <p className="text-amber-100">{selectedUser.id}</p>
+                    <p className="text-amber-100">{selectedUser._id}</p>
                   </div>
                 </div>
               </div>
@@ -698,14 +668,17 @@ const AdminPanel = () => {
 
           <div className="p-6 border-t border-purple-800/30">
             <div className="flex gap-4">
-              <button className="flex-1 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-[#1e0d24] font-medium rounded-lg transition-colors">
+              <button className="flex-1 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-[#1e0d24] font-medium rounded-lg transition-colors"
+              // onClick={()=> handleUpdateUser(selectedUser._id)}
+              >
                 Edit User
               </button>
               <button
-                onClick={() => handleDeleteUser(selectedUser.id)}
+                onClick={() => handleDeleteUser(selectedUser._id)}
                 className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-lg transition-colors"
               >
                 Delete
+                
               </button>
             </div>
           </div>
