@@ -89,7 +89,7 @@ function RegisterModal({ handleCloseModal }) {
     };
 
     try {
-      const res = await fetch('http://localhost:8888/api/form', {
+      const res = await fetch('https://data-collection-40bw.onrender.com/api/form', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
