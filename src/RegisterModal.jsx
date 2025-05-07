@@ -1,61 +1,7 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'react-toastify';
-// Indian states and districts data
-const indianStates = [
-  {
-    state: 'Andhra Pradesh',
-    districts: ['Anantapur', 'Chittoor', 'East Godavari', 'Guntur', 'Krishna'],
-  },
-  {
-    state: 'Karnataka',
-    districts: ['Bangalore', 'Mysore', 'Hubli', 'Mangalore', 'Belgaum'],
-  },
-  {
-    state: 'Tamil Nadu',
-    districts: ['Chennai', 'Coimbatore', 'Madurai', 'Salem', 'Tirunelveli'],
-  },
-  {
-    state: 'Maharashtra',
-    districts: ['Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik'],
-  },
-  {
-    state: 'Kerala',
-    districts: [
-      'Thiruvananthapuram',
-      'Kochi',
-      'Kozhikode',
-      'Thrissur',
-      'Kollam',
-    ],
-  },
-];
-
-// Taluk data
-const taluks = {
-  Anantapur: ['Anantapur', 'Dharmavaram', 'Kadiri', 'Kalyanadurgam'],
-  Chittoor: ['Chittoor', 'Tirupati', 'Madanapalle', 'Punganur'],
-  Bangalore: ['Bangalore North', 'Bangalore South', 'Anekal', 'Doddaballapur'],
-  Mysore: ['Mysore', 'Nanjangud', 'T.Narasipura', 'Hunsur'],
-  Chennai: ['Chennai North', 'Chennai South', 'Chennai Central', 'Ambattur'],
-  Coimbatore: [
-    'Coimbatore North',
-    'Coimbatore South',
-    'Mettupalayam',
-    'Pollachi',
-  ],
-  Mumbai: ['Mumbai City', 'Mumbai Suburban', 'Borivali', 'Andheri'],
-  Pune: ['Pune City', 'Haveli', 'Mulshi', 'Maval'],
-  Thiruvananthapuram: [
-    'Thiruvananthapuram',
-    'Neyyattinkara',
-    'Nedumangad',
-    'Chirayinkeezhu',
-  ],
-  Kochi: ['Kochi', 'Kanayannur', 'Muvattupuzha', 'Aluva'],
-};
 
 const backdropVariants = {
   hidden: { opacity: 0 },
@@ -73,8 +19,8 @@ const modalVariants = {
 };
 
 function RegisterModal({ handleCloseModal }) {
+  const [statesData, setStatesData] = useState([]);
   const [availableDistricts, setAvailableDistricts] = useState([]);
-  const [availableTaluks, setAvailableTaluks] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -87,6 +33,21 @@ function RegisterModal({ handleCloseModal }) {
     taluk: '',
   });
 
+  // Fetch states and districts data from the JSON file in public folder
+  useEffect(() => {
+    const fetchStatesData = async () => {
+      try {
+        const response = await fetch('/states-and-districts.json');
+        const data = await response.json();
+        setStatesData(data.states || []);
+      } catch (error) {
+        console.error('Error fetching states data:', error);
+      }
+    };
+
+    fetchStatesData();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -95,7 +56,7 @@ function RegisterModal({ handleCloseModal }) {
     });
 
     if (name === 'state') {
-      const stateData = indianStates.find((s) => s.state === value);
+      const stateData = statesData.find((s) => s.state === value);
       setAvailableDistricts(stateData ? stateData.districts : []);
       setFormData((prev) => ({
         ...prev,
@@ -105,7 +66,6 @@ function RegisterModal({ handleCloseModal }) {
     }
 
     if (name === 'district') {
-      setAvailableTaluks(taluks[value] || []);
       setFormData((prev) => ({
         ...prev,
         taluk: '',
@@ -115,7 +75,7 @@ function RegisterModal({ handleCloseModal }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const payload = {
       fullName: formData.name,
       phoneNumber: formData.phone,
@@ -127,7 +87,7 @@ function RegisterModal({ handleCloseModal }) {
       taluk: formData.taluk,
       jobDescription: formData.jobDescription,
     };
-  
+
     try {
       const res = await fetch('http://localhost:8888/api/form', {
         method: 'POST',
@@ -136,9 +96,9 @@ function RegisterModal({ handleCloseModal }) {
         },
         body: JSON.stringify(payload),
       });
-  
+
       if (!res.ok) throw new Error('Failed to submit form');
-  
+
       alert('Form submitted successfully!');
       handleCloseModal();
     } catch (error) {
@@ -146,11 +106,10 @@ function RegisterModal({ handleCloseModal }) {
       alert('Failed to submit the form');
     }
   };
-  
 
   return (
     <motion.div
-      className="fixed inset-0 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 flex items-center justify-center z-50 p-4 overflow-y-auto"
       initial="hidden"
       animate="visible"
       exit="hidden"
@@ -162,11 +121,11 @@ function RegisterModal({ handleCloseModal }) {
       ></motion.div>
 
       <motion.div
-        className="relative bg-gradient-to-br from-[#1e0d24] to-[#3a1d44] rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden border border-purple-500/20"
+        className="relative bg-gradient-to-br from-[#1e0d24] to-[#3a1d44] rounded-xl shadow-2xl w-full max-w-3xl my-8 overflow-hidden border border-purple-500/20"
         variants={modalVariants}
       >
-        <div className="flex justify-between items-center p-6 border-b border-purple-700/30">
-          <h2 className="text-2xl font-bold text-amber-100">
+        <div className="flex justify-between items-center p-4 sm:p-6 border-b border-purple-700/30">
+          <h2 className="text-xl sm:text-2xl font-bold text-amber-100">
             Registration Form
           </h2>
           <motion.button
@@ -179,9 +138,9 @@ function RegisterModal({ handleCloseModal }) {
           </motion.button>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6 overflow-y-auto max-h-[80vh]">
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Personal Information */}
               <div className="space-y-4">
                 <motion.div
@@ -191,7 +150,7 @@ function RegisterModal({ handleCloseModal }) {
                 >
                   <label
                     htmlFor="name"
-                    className="block text-amber-100 mb-2 font-medium"
+                    className="block text-amber-100 mb-1 sm:mb-2 font-medium"
                   >
                     Full Name
                   </label>
@@ -202,7 +161,7 @@ function RegisterModal({ handleCloseModal }) {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
                   />
                 </motion.div>
 
@@ -213,7 +172,7 @@ function RegisterModal({ handleCloseModal }) {
                 >
                   <label
                     htmlFor="phone"
-                    className="block text-amber-100 mb-2 font-medium"
+                    className="block text-amber-100 mb-1 sm:mb-2 font-medium"
                   >
                     Phone Number
                   </label>
@@ -224,7 +183,7 @@ function RegisterModal({ handleCloseModal }) {
                     value={formData.phone}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
                   />
                 </motion.div>
 
@@ -235,7 +194,7 @@ function RegisterModal({ handleCloseModal }) {
                 >
                   <label
                     htmlFor="email"
-                    className="block text-amber-100 mb-2 font-medium"
+                    className="block text-amber-100 mb-1 sm:mb-2 font-medium"
                   >
                     Email Address
                   </label>
@@ -246,7 +205,7 @@ function RegisterModal({ handleCloseModal }) {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
                   />
                 </motion.div>
 
@@ -257,7 +216,7 @@ function RegisterModal({ handleCloseModal }) {
                 >
                   <label
                     htmlFor="jobType"
-                    className="block text-amber-100 mb-2 font-medium"
+                    className="block text-amber-100 mb-1 sm:mb-2 font-medium"
                   >
                     Job Type
                   </label>
@@ -267,7 +226,7 @@ function RegisterModal({ handleCloseModal }) {
                     value={formData.jobType}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all appearance-none"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all appearance-none"
                   >
                     <option value="">Select Job Type</option>
                     <option value="government">Government</option>
@@ -282,7 +241,7 @@ function RegisterModal({ handleCloseModal }) {
                 >
                   <label
                     htmlFor="jobRole"
-                    className="block text-amber-100 mb-2 font-medium"
+                    className="block text-amber-100 mb-1 sm:mb-2 font-medium"
                   >
                     Business Type
                   </label>
@@ -292,7 +251,7 @@ function RegisterModal({ handleCloseModal }) {
                     value={formData.jobRole}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all appearance-none"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all appearance-none"
                   >
                     <option value="">Select Business Type</option>
                     <option value="manufacture">Manufacture</option>
@@ -310,7 +269,7 @@ function RegisterModal({ handleCloseModal }) {
                 >
                   <label
                     htmlFor="state"
-                    className="block text-amber-100 mb-2 font-medium"
+                    className="block text-amber-100 mb-1 sm:mb-2 font-medium"
                   >
                     State
                   </label>
@@ -320,10 +279,10 @@ function RegisterModal({ handleCloseModal }) {
                     value={formData.state}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all appearance-none"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all appearance-none"
                   >
                     <option value="">Select State</option>
-                    {indianStates.map((stateData) => (
+                    {statesData.map((stateData) => (
                       <option key={stateData.state} value={stateData.state}>
                         {stateData.state}
                       </option>
@@ -338,7 +297,7 @@ function RegisterModal({ handleCloseModal }) {
                 >
                   <label
                     htmlFor="district"
-                    className="block text-amber-100 mb-2 font-medium"
+                    className="block text-amber-100 mb-1 sm:mb-2 font-medium"
                   >
                     District
                   </label>
@@ -349,7 +308,7 @@ function RegisterModal({ handleCloseModal }) {
                     onChange={handleChange}
                     required
                     disabled={!formData.state}
-                    className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="">Select District</option>
                     {availableDistricts.map((district) => (
@@ -367,26 +326,21 @@ function RegisterModal({ handleCloseModal }) {
                 >
                   <label
                     htmlFor="taluk"
-                    className="block text-amber-100 mb-2 font-medium"
+                    className="block text-amber-100 mb-1 sm:mb-2 font-medium"
                   >
                     Taluk
                   </label>
-                  <select
+                  <input
+                    type="text"
                     id="taluk"
                     name="taluk"
                     value={formData.taluk}
                     onChange={handleChange}
                     required
                     disabled={!formData.district}
-                    className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <option value="">Select Taluk</option>
-                    {availableTaluks.map((taluk) => (
-                      <option key={taluk} value={taluk}>
-                        {taluk}
-                      </option>
-                    ))}
-                  </select>
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    placeholder="Enter taluk name"
+                  />
                 </motion.div>
 
                 <motion.div
@@ -396,7 +350,7 @@ function RegisterModal({ handleCloseModal }) {
                 >
                   <label
                     htmlFor="jobDescription"
-                    className="block text-amber-100 mb-2 font-medium"
+                    className="block text-amber-100 mb-1 sm:mb-2 font-medium"
                   >
                     Job Description
                   </label>
@@ -406,14 +360,14 @@ function RegisterModal({ handleCloseModal }) {
                     value={formData.jobDescription}
                     onChange={handleChange}
                     rows="3"
-                    className="w-full px-4 py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
                   ></textarea>
                 </motion.div>
               </div>
             </div>
 
             <motion.div
-              className="mt-8 text-center"
+              className="mt-6 sm:mt-8 text-center"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
@@ -422,7 +376,7 @@ function RegisterModal({ handleCloseModal }) {
                 type="submit"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-[#1e0d24] font-bold rounded-lg shadow-lg transition-all"
+                className="px-6 sm:px-8 py-2 sm:py-3 bg-amber-500 hover:bg-amber-600 text-[#1e0d24] font-bold rounded-lg shadow-lg transition-all"
               >
                 Submit Registration
               </motion.button>

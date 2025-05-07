@@ -29,9 +29,8 @@ export default function ReligiousPortal() {
     <div className="relative min-h-screen w-full bg-[#2a1533]">
       {/* Banner Section */}
       <div
-        className="relative min-h-screen w-full flex flex-col items-center justify-center text-center p-8"
+        className="relative min-h-screen w-full flex flex-col items-center justify-center text-center p-4 md:p-8"
         style={{
-          backgroundImage: "url('/api/placeholder/1920/1080')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundBlend: 'overlay',
@@ -39,12 +38,12 @@ export default function ReligiousPortal() {
       >
         <div className="absolute inset-0 bg-[#2a1533] bg-opacity-70"></div>
 
-        <div className="relative z-10">
+        <div className="relative z-10 px-4">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-5xl font-bold text-amber-100 mb-6"
+            className="text-3xl md:text-5xl font-bold text-amber-100 mb-4 md:mb-6"
           >
             Welcome to Our Spiritual Journey
           </motion.h1>
@@ -52,13 +51,13 @@ export default function ReligiousPortal() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-xl text-amber-50 mb-8 max-w-2xl mx-auto"
+            className="text-base md:text-xl text-amber-50 mb-6 md:mb-8 max-w-2xl mx-auto"
           >
             Join our community of devotees and explore the path to spiritual
             enlightenment. Register to receive updates on events, rituals, and
             gatherings.
           </motion.p>
-          <div className="flex justify-center space-x-4 ">
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
             <motion.button
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -66,7 +65,7 @@ export default function ReligiousPortal() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleOpenRegister}
-              className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+              className="px-6 md:px-8 cursor-pointer py-2 md:py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
             >
               Register Now
             </motion.button>
@@ -77,9 +76,9 @@ export default function ReligiousPortal() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleOpenLogin}
-              className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+              className="px-6 md:px-8 cursor-pointer py-2 md:py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
             >
-             Admin Sign In
+              Admin Sign In
             </motion.button>
           </div>
         </div>

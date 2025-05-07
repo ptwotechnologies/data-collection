@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, User, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../src/context/axiosInstance'
+import axiosInstance from '../src/context/axiosInstance';
 const backdropVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1 },
@@ -40,8 +40,8 @@ function LoginForm({ handleCloseLogin }) {
     setLoading(true);
 
     try {
-      const response = await axiosInstance.post('/admin/login', formData); 
-      console.log("REponse data" , response)
+      const response = await axiosInstance.post('/admin/login', formData);
+      console.log('REponse data', response);
       const { token } = response.data;
 
       // On successful login, store the token and navigate
@@ -98,8 +98,11 @@ function LoginForm({ handleCloseLogin }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <label htmlFor="email" className="block text-amber-100 mb-2 font-medium">
-                  Username
+                <label
+                  htmlFor="email"
+                  className="block text-amber-100 mb-2 font-medium"
+                >
+                  Email
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -122,7 +125,10 @@ function LoginForm({ handleCloseLogin }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
               >
-                <label htmlFor="password" className="block text-amber-100 mb-2 font-medium">
+                <label
+                  htmlFor="password"
+                  className="block text-amber-100 mb-2 font-medium"
+                >
                   Password
                 </label>
                 <div className="relative">
@@ -171,7 +177,9 @@ function LoginForm({ handleCloseLogin }) {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     disabled={loading}
-                    className={`px-8 py-3 ${loading ? 'bg-gray-400' : 'bg-amber-500'} hover:bg-amber-600 text-[#1e0d24] font-bold rounded-lg shadow-lg transition-all w-full`}
+                    className={`px-8 py-3 ${
+                      loading ? 'bg-gray-400' : 'bg-amber-500'
+                    } hover:bg-amber-600 text-[#1e0d24] font-bold rounded-lg shadow-lg transition-all w-full`}
                   >
                     {loading ? 'Logging In...' : 'Admin Sign In'}
                   </motion.button>
