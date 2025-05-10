@@ -1,8 +1,7 @@
 
 import mongoose from 'mongoose';
 
-const MONGO_URI = "mongodb+srv://zuhairk7890o:2p5g8sdu6O5DdOjj@cluster0.2aj5kpy.mongodb.net/"
-
+const MONGO_URI = 'mongodb+srv://ptwotechnologies:Pqr6HAicdCnErKO4@cluster0.wijprju.mongodb.net/datacollection?retryWrites=true&w=majority&appName=Cluster0';
 
 const connectDB = async () => {
     try { await mongoose.connect(MONGO_URI); console.log('MongoDB connected'); }

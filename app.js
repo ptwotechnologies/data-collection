@@ -1,6 +1,8 @@
 import express from 'express'
 import formRoutes from './routes/formRoutes.js'
 import adminRoutes from './routes/adminRoute.js'
+import girlRoutes from './routes/girlFormRoute.js'
+import boyRoutes from './routes/boyFormRoute.js'
 import connectDB from './db.js';
 
 import cors from 'cors'
@@ -38,6 +40,8 @@ app.get('/', (req, res) => {
 
 app.use('/api/form',formRoutes)
 app.use('/api/admin',adminRoutes)
+app.use('/api/girl' , girlRoutes)
+app.use('/api/boy' , boyRoutes)
 
 app.get("*", (req, res) => {
   res.status(404).json({
