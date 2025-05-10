@@ -3,3 +3,11 @@
 @theme {
   --breakpoint-xs: 25rem;
 }
+
+input {
+  outline: none;
+  /* border: none; */
+}
+button {
+  cursor: pointer;
+}

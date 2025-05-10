@@ -10,6 +10,7 @@ export default function ReligiousPortal() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [showMarriageOptions, setShowMarriageOptions] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,6 +40,14 @@ export default function ReligiousPortal() {
 
   const handleCloseLogin = () => {
     setIsLoginOpen(false);
+  };
+
+  const handleRegisterAsBoy = () => {
+    navigate('/boy-form');
+  };
+
+  const handleRegisterAsGirl = () => {
+    navigate('/girl-form');
   };
 
   return (
@@ -74,7 +83,7 @@ export default function ReligiousPortal() {
             enlightenment. Register to receive updates on events, rituals, and
             gatherings.
           </motion.p>
-          <div className="flex justify-center space-x-4 ">
+          <div className="flex justify-center space-x-4">
             <motion.button
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -86,6 +95,55 @@ export default function ReligiousPortal() {
             >
               Register Now
             </motion.button>
+
+            {/* Get Married dropdown container */}
+            <div className="relative">
+              <motion.button
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onMouseEnter={() => setShowMarriageOptions(true)}
+                onMouseLeave={() => setShowMarriageOptions(false)}
+                className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+              >
+                Get Married
+              </motion.button>
+
+              {/* Dropdown options */}
+              <AnimatePresence>
+                {showMarriageOptions && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute left-0 right-0 mt-2 flex flex-col"
+                    onMouseEnter={() => setShowMarriageOptions(true)}
+                    onMouseLeave={() => setShowMarriageOptions(false)}
+                  >
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={handleRegisterAsGirl}
+                      className="w-full py-2 bg-pink-400 hover:bg-pink-500 text-white font-medium rounded-t-md shadow-md"
+                    >
+                      Register as Girl
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={handleRegisterAsBoy}
+                      className="w-full py-2 bg-purple-400 hover:bg-purle-500 text-white font-medium rounded-b-md shadow-md"
+                    >
+                      Register as Boy
+                    </motion.button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <motion.button
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
