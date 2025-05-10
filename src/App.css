@@ -11,3 +11,9 @@ input {
 button {
   cursor: pointer;
 }
+input:focus,
+textarea:focus,
+button:focus,
+input[type='date']:focus {
+  outline: none;
+}

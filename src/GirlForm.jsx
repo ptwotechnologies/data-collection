@@ -101,7 +101,7 @@ export default function GirlForm() {
 
   return (
     <div className="min-h-screen bg-[#2a1533] p-4 flex justify-center">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-4xl my-8">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-[1200px] my-8">
         <div className="text-center mb-6">
           <div className="bg-red-600 text-white py-2 px-4 rounded-lg inline-block mb-4">
             <h1 className="text-xl font-bold">Jai Purnabrahma Kabir Saheb</h1>
@@ -120,7 +120,7 @@ export default function GirlForm() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col md:flex-row justify-between gap-6">
-            <div className="border border-gray-300 w-32 h-36 flex flex-col items-center justify-center">
+            <div className=" border-2 border-dashed  border-purple-300 rounded-2xl w-32 h-36 flex flex-col items-center justify-center">
               <input
                 type="file"
                 id="girlPhoto"
@@ -221,7 +221,7 @@ export default function GirlForm() {
               </div>
             </div>
 
-            <div className="border border-gray-300 w-32 h-36 flex flex-col items-center justify-center">
+            <div className="border-2 border-dashed border-purple-300 rounded-2xl w-32 h-36 flex flex-col items-center justify-center">
               <input
                 type="file"
                 id="boyPhoto"
