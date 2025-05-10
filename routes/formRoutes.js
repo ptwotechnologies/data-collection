@@ -14,9 +14,9 @@ const upload = multer({ dest: 'uploads/' });
 
 router.post('/', createRegistration);  
 router.get('/',  getRegistrations);  
-router.put('/:id', authMiddleware, updateRegistration);  
-router.delete('/:id',authMiddleware, deleteRegistration);  
-router.get('/export/csv', authMiddleware, exportCSV);  
+router.put('/:id', updateRegistration);  
+router.delete('/:id', deleteRegistration);  
+router.get('/export/csv', exportCSV);  
 router.post('/import/csv', upload.single('file'), importCSV); 
 
 export default router;
