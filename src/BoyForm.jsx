@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from 'axios'; // ✅ Axios import
 
 export default function GirlForm() {
   const [formData, setFormData] = useState({
@@ -65,38 +66,37 @@ export default function GirlForm() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Create FormData object for submitting files along with form data
     const submissionData = new FormData();
-
-    // Add all text form fields
     Object.keys(formData).forEach((key) => {
       submissionData.append(key, formData[key]);
     });
 
-    // Add file uploads
     if (girlPhoto) submissionData.append('girlPhoto', girlPhoto);
     if (boyPhoto) submissionData.append('boyPhoto', boyPhoto);
     if (boySignature) submissionData.append('boySignature', boySignature);
     if (familySignature)
       submissionData.append('familySignature', familySignature);
 
-    //  connect to your backend API
-    console.log('Form data:', formData);
-    console.log('Files:', {
-      girlPhoto,
-      boyPhoto,
-      boySignature,
-      familySignature,
-    });
+    try {
+      const response = await axios.post(
+        'http://localhost:8888/api/boy/submit', 
+        submissionData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
 
-    // API call
-    // fetch('/api/marriage-registration', {
-    //   method: 'POST',
-    //   body: submissionData,
-    // });
+      console.log('Response:', response.data);
+      alert('Form submitted successfully!');
+    } catch (error) {
+      console.error('Submission error:', error);
+      alert('Failed to submit the form.');
+    }
   };
 
   return (

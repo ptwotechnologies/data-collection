@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from 'axios';
 
 export default function GirlForm() {
   const [formData, setFormData] = useState({
@@ -44,18 +45,12 @@ export default function GirlForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleRadioChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleFileChange = (e, setterFunction) => {
@@ -65,39 +60,35 @@ export default function GirlForm() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Create FormData object for submitting files along with form data
     const submissionData = new FormData();
 
-    // Add all text form fields
     Object.keys(formData).forEach((key) => {
       submissionData.append(key, formData[key]);
     });
 
-    // Add file uploads
     if (girlPhoto) submissionData.append('girlPhoto', girlPhoto);
     if (boyPhoto) submissionData.append('boyPhoto', boyPhoto);
     if (girlSignature) submissionData.append('girlSignature', girlSignature);
-    if (familySignature)
-      submissionData.append('familySignature', familySignature);
+    if (familySignature) submissionData.append('familySignature', familySignature);
 
-    // Here you would connect to your backend API
-    console.log('Form data:', formData);
-    console.log('Files:', {
-      girlPhoto,
-      boyPhoto,
-      girlSignature,
-      familySignature,
-    });
+    try {
+      const response = await axios.post('http://localhost:8888/api/girl/submit', submissionData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
-    // API call would go here
-    // fetch('/api/marriage-registration', {
-    //   method: 'POST',
-    //   body: submissionData,
-    // });
+      console.log('Form submitted successfully:', response.data);
+      alert('Form submitted successfully!');
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Failed to submit form.');
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-[#2a1533] p-4 flex justify-center">
