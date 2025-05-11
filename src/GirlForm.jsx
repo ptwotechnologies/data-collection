@@ -38,10 +38,16 @@ export default function GirlForm() {
     girlSignatureDate: '',
   });
 
-  const [girlPhoto, setGirlPhoto] = useState(null);
-  const [boyPhoto, setBoyPhoto] = useState(null);
-  const [girlSignature, setGirlSignature] = useState(null);
-  const [familySignature, setFamilySignature] = useState(null);
+  const [girlPhoto, setGirlPhoto] = useState({ file: null, preview: null });
+  const [boyPhoto, setBoyPhoto] = useState({ file: null, preview: null });
+  const [girlSignature, setGirlSignature] = useState({
+    file: null,
+    preview: null,
+  });
+  const [familySignature, setFamilySignature] = useState({
+    file: null,
+    preview: null,
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -56,7 +62,10 @@ export default function GirlForm() {
   const handleFileChange = (e, setterFunction) => {
     const file = e.target.files[0];
     if (file) {
-      setterFunction(file);
+      // Create a URL for the file preview
+      const previewUrl = URL.createObjectURL(file);
+      // Update state with both file and preview URL
+      setterFunction({ file, preview: previewUrl });
     }
   };
 
@@ -72,14 +81,19 @@ export default function GirlForm() {
     if (girlPhoto) submissionData.append('girlPhoto', girlPhoto);
     if (boyPhoto) submissionData.append('boyPhoto', boyPhoto);
     if (girlSignature) submissionData.append('girlSignature', girlSignature);
-    if (familySignature) submissionData.append('familySignature', familySignature);
+    if (familySignature)
+      submissionData.append('familySignature', familySignature);
 
     try {
-      const response = await axios.post('http://localhost:8888/api/girl/submit', submissionData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await axios.post(
+        'http://localhost:8888/api/girl/submit',
+        submissionData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
 
       console.log('Form submitted successfully:', response.data);
       alert('Form submitted successfully!');
@@ -88,7 +102,6 @@ export default function GirlForm() {
       alert('Failed to submit form.');
     }
   };
-
 
   return (
     <div className="min-h-screen bg-[#2a1533] p-4 flex justify-center">
@@ -111,7 +124,7 @@ export default function GirlForm() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col md:flex-row justify-between gap-6">
-            <div className=" border-2 border-dashed  border-purple-300 rounded-2xl w-32 h-36 flex flex-col items-center justify-center">
+            <div className="border-2 border-dashed border-purple-300 rounded-2xl w-32 h-36 flex flex-col items-center justify-center">
               <input
                 type="file"
                 id="girlPhoto"
@@ -123,10 +136,13 @@ export default function GirlForm() {
                 htmlFor="girlPhoto"
                 className="cursor-pointer flex flex-col items-center justify-center w-full h-full text-center text-sm text-gray-500 hover:bg-gray-50"
               >
-                {girlPhoto ? (
-                  <div className="text-center">
-                    <p className="text-green-600 font-medium">Photo selected</p>
-                    <p className="text-xs">{girlPhoto.name}</p>
+                {girlPhoto.file ? (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <img
+                      src={girlPhoto.preview}
+                      alt="Preview"
+                      className="w-full h-full object-cover rounded-lg"
+                    />
                   </div>
                 ) : (
                   <p>
@@ -224,10 +240,13 @@ export default function GirlForm() {
                 htmlFor="boyPhoto"
                 className="cursor-pointer flex flex-col items-center justify-center w-full h-full text-center text-sm text-gray-500 hover:bg-gray-50"
               >
-                {boyPhoto ? (
-                  <div className="text-center">
-                    <p className="text-green-600 font-medium">Photo selected</p>
-                    <p className="text-xs">{boyPhoto.name}</p>
+                {boyPhoto.file ? (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <img
+                      src={boyPhoto.preview}
+                      alt="Preview"
+                      className="w-full h-full object-cover rounded-lg"
+                    />
                   </div>
                 ) : (
                   <p>
@@ -656,12 +675,13 @@ export default function GirlForm() {
                   htmlFor="familySignature"
                   className="cursor-pointer flex items-center justify-center w-full h-20 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-50"
                 >
-                  {familySignature ? (
-                    <div className="text-center">
-                      <p className="text-green-600 font-medium">
-                        Signature uploaded
-                      </p>
-                      <p className="text-xs">{familySignature.name}</p>
+                  {familySignature.file ? (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <img
+                        src={familySignature.preview}
+                        alt="Family Signature Preview"
+                        className="h-full object-contain rounded-lg"
+                      />
                     </div>
                   ) : (
                     <p className="text-sm text-gray-500">
@@ -742,12 +762,13 @@ export default function GirlForm() {
                   htmlFor="girlSignature"
                   className="cursor-pointer flex items-center justify-center w-full h-20 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-50"
                 >
-                  {girlSignature ? (
-                    <div className="text-center">
-                      <p className="text-green-600 font-medium">
-                        Signature uploaded
-                      </p>
-                      <p className="text-xs">{girlSignature.name}</p>
+                  {girlSignature.file ? (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <img
+                        src={girlSignature.preview}
+                        alt="Girl Signature Preview"
+                        className="h-full object-contain rounded-lg"
+                      />
                     </div>
                   ) : (
                     <p className="text-sm text-gray-500">
