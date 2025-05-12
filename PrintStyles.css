@@ -1,0 +1,60 @@
+@media print {
+  /* Print-specific styles */
+  @page {
+    size: 210mm 297mm; /* A4 size */
+    margin: 0;
+  }
+  
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background-color: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Hide elements not needed in print */
+  button, 
+  .print-hide,
+  input[type="file"],
+  .bg-[#2a1533] {
+    display: none !important;
+  }
+  
+  /* Paper styling */
+  .print-container {
+    background-color: white !important;
+    color: black !important;
+    width: 210mm !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 10mm !important;
+  }
+  
+  /* Ensure colored backgrounds print correctly */
+  .bg-red-600,
+  .bg-gray-50,
+  .bg-red-100 {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  /* Ensure inputs are visible */
+  input {
+    border-bottom: 1px solid #999 !important;
+  }
+  
+  /* Make radio buttons more visible */
+  input[type="radio"] {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 10px;
+    border: 1px solid black;
+    border-radius: 50%;
+  }
+  
+  input[type="radio"]:checked {
+    background-color: black;
+  }
+}

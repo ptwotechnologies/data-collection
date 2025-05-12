@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import axios from 'axios';
 
+
 export default function GirlForm() {
+
+  
   const [formData, setFormData] = useState({
     girlName: '',
     girlFatherName: '',
@@ -787,6 +790,7 @@ export default function GirlForm() {
             >
               Submit Registration
             </button>
+            
           </div>
         </form>
       </div>
