@@ -1,238 +1,266 @@
-import { useState, useRef } from "react"
-import axios from "axios"
-import html2canvas from "html2canvas"
-import jsPDF from "jspdf"
-import { Printer } from "lucide-react"
+import { useState, useRef } from 'react';
+import axios from 'axios';
+import html2canvas from 'html2canvas-pro';
+import jsPDF from 'jspdf';
 
 export default function BoyForm() {
-  const formRef = useRef(null)
-
-  const downloadPDF = async () => {
-    if (!formRef.current) return
-
-    // Show loading indicator
-    const loadingMessage = document.createElement("div")
-    loadingMessage.className =
-      "fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-50"
-    loadingMessage.innerHTML =
-      '<div class="bg-white p-5 rounded-lg shadow-lg"><p class="text-lg font-medium">Generating PDF...</p></div>'
-    document.body.appendChild(loadingMessage)
-
-    try {
-      // Wait a moment to ensure loading message is displayed
-      await new Promise(resolve => setTimeout(resolve, 100))
-
-      const element = formRef.current
-
-     const canvas = await html2canvas(element, {
-  scale: 1.5, // try 1 or 1.5 instead of 2
-  useCORS: true,
-  backgroundColor: "#ffffff",
-})
-
-
-      const imgData = canvas.toDataURL("image/png")
-
-      // For A4 size
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4"
-      })
-
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = pdf.internal.pageSize.getHeight()
-
-      const imgWidth = canvas.width
-      const imgHeight = canvas.height
-
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight)
-
-      const imgX = (pdfWidth - imgWidth * ratio) / 2
-      const imgY = 0
-
-      pdf.addImage(
-        imgData,
-        "PNG",
-        imgX,
-        imgY,
-        imgWidth * ratio,
-        imgHeight * ratio
-      )
-
-      // If content exceeds a page, add more pages
-      const totalPages = Math.ceil((imgHeight * ratio) / pdfHeight)
-
-      if (totalPages > 1) {
-        for (let i = 1; i < totalPages; i++) {
-          pdf.addPage()
-          pdf.addImage(
-            imgData,
-            "PNG",
-            imgX,
-            -(imgHeight * ratio * i) / totalPages,
-            imgWidth * ratio,
-            imgHeight * ratio
-          )
-        }
-      }
-
-      pdf.save("marriage_registration_form.pdf")
-    } catch (error) {
-      console.error("Error generating PDF:", error)
-      alert("Failed to generate PDF. Please try again.")
-    } finally {
-      // Remove loading indicator
-      document.body.removeChild(loadingMessage)
-    }
-  }
-
   const [formData, setFormData] = useState({
-    boyName: "",
-    boyFatherName: "",
-    boyMotherName: "",
-    boyDOB: "",
-    boyAge: "",
-    fullAddress: "",
-    tehsil: "",
-    district: "",
-    state: "",
-    mobileNumber: "",
-    firstNameReceiptDate: "",
-    satnamReceiptDate: "",
-    dateOfNameReceipt: "",
-    abstractReceiptDate: "",
-    declarantName: "",
-    declarantSon: "",
-    declarantResident: "",
-    wantToMarry: "",
-    wantToMarryState: "",
-    childName: "",
-    childFrom: "",
-    childDistrict: "",
-    ramainSiriNo: "",
-    location: "",
-    dateOfRamaini: "",
-    isAdult: "No",
-    isDowryFree: "No",
-    agreeWithRules: "No",
-    isAlreadyMarried: "No",
-    boySignatureName: "",
-    boySignatureMobile: "",
-    boySignatureRelation: "",
-    boySignatureDate: ""
-  })
+    girlName: '',
+    girlFatherName: '',
+    girlMotherName: '',
+    girlDOB: '',
+    girlAge: '',
+    fullAddress: '',
+    tehsil: '',
+    district: '',
+    state: '',
+    mobileNumber: '',
+    firstNameReceiptDate: '',
+    satnamReceiptDate: '',
+    dateOfNameReceipt: '',
+    abstractReceiptDate: '',
+    declarantName: '',
+    declarantSon: '',
+    declarantResident: '',
+    wantToMarry: '',
+    wantToMarryState: '',
+    childName: '',
+    childFrom: '',
+    childDistrict: '',
+    ramainSiriNo: '',
+    location: '',
+    dateOfRamaini: '',
+    isAdult: 'No',
+    isDowryFree: 'No',
+    agreeWithRules: 'No',
+    isAlreadyMarried: 'No',
+    girlSignatureName: '',
+    girlSignatureMobile: '',
+    girlSignatureRelation: '',
+    girlSignatureDate: '',
+  });
 
-  const [girlPhoto, setGirlPhoto] = useState({ file: null, preview: null })
-  const [boyPhoto, setBoyPhoto] = useState({ file: null, preview: null })
-  const [boySignature, setBoySignature] = useState({
+  const [girlPhoto, setGirlPhoto] = useState({ file: null, preview: null });
+  const [boyPhoto, setBoyPhoto] = useState({ file: null, preview: null });
+  const [girlSignature, setGirlSignature] = useState({
     file: null,
-    preview: null
-  })
+    preview: null,
+  });
   const [familySignature, setFamilySignature] = useState({
     file: null,
-    preview: null
-  })
+    preview: null,
+  });
 
-  const handleChange = e => {
-    const { name, value } = e.target
-    setFormData({
-      ...formData,
-      [name]: value
-    })
-  }
+  const printRef = useRef();
+  const [isPdfMode, setIsPdfMode] = useState(false);
 
-  const handleRadioChange = e => {
-    const { name, value } = e.target
-    setFormData({
-      ...formData,
-      [name]: value
-    })
-  }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleRadioChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
   const handleFileChange = (e, setterFunction) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
       // Create a URL for the file preview
-      const previewUrl = URL.createObjectURL(file)
+      const previewUrl = URL.createObjectURL(file);
       // Update state with both file and preview URL
-      setterFunction({ file, preview: previewUrl })
+      setterFunction({ file, preview: previewUrl });
     }
-  }
+  };
 
-  const handleSubmit = async e => {
-    e.preventDefault()
+  /*   const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    const submissionData = new FormData()
-    Object.keys(formData).forEach(key => {
-      submissionData.append(key, formData[key])
-    })
+    const submissionData = new FormData();
 
-    if (girlPhoto.file) submissionData.append("girlPhoto", girlPhoto.file)
-    if (boyPhoto.file) submissionData.append("boyPhoto", boyPhoto.file)
-    if (boySignature.file)
-      submissionData.append("boySignature", boySignature.file)
-    if (familySignature.file)
-      submissionData.append("familySignature", familySignature.file)
+    Object.keys(formData).forEach((key) => {
+      submissionData.append(key, formData[key]);
+    });
+
+    if (girlPhoto) submissionData.append('girlPhoto', girlPhoto);
+    if (boyPhoto) submissionData.append('boyPhoto', boyPhoto);
+    if (girlSignature) submissionData.append('girlSignature', girlSignature);
+    if (familySignature)
+      submissionData.append('familySignature', familySignature);
 
     try {
       const response = await axios.post(
-        "http://localhost:8888/api/boy/submit",
+        'http://localhost:8888/api/girl/submit',
         submissionData,
         {
           headers: {
-            "Content-Type": "multipart/form-data"
-          }
+            'Content-Type': 'multipart/form-data',
+          },
         }
-      )
+      );
 
-      console.log("Response:", response.data)
-      alert("Form submitted successfully!")
+      console.log('Form submitted successfully:', response.data);
+      alert('Form submitted successfully!');
     } catch (error) {
-      console.error("Submission error:", error)
-      alert("Failed to submit the form.")
+      console.error('Error submitting form:', error);
+      alert('Failed to submit form.');
     }
-  }
+  }; */
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const submissionData = new FormData();
+
+    Object.keys(formData).forEach((key) => {
+      submissionData.append(key, formData[key]);
+    });
+
+    if (girlPhoto.file) submissionData.append('girlPhoto', girlPhoto.file);
+    if (boyPhoto.file) submissionData.append('boyPhoto', boyPhoto.file);
+    if (girlSignature.file)
+      submissionData.append('girlSignature', girlSignature.file);
+    if (familySignature.file)
+      submissionData.append('familySignature', familySignature.file);
+
+    // Log each key-value in FormData
+    for (let pair of submissionData.entries()) {
+      console.log(`${pair[0]}:`, pair[1]);
+    }
+
+    alert('Form data logged in console.');
+  };
+
+  const handlePdfDownload = async () => {
+    try {
+      // Enter PDF mode to hide buttons
+      setIsPdfMode(true);
+
+      // Small delay to ensure render completes
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const element = printRef.current;
+
+      // Use html2canvas-pro with enhanced options
+      const canvas = await html2canvas(element, {
+        useCORS: true,
+        scale: 2,
+        logging: false,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+
+        // html2canvas-pro specific options
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        windowWidth: document.documentElement.offsetWidth,
+        windowHeight: document.documentElement.offsetHeight,
+
+        // Additional rendering improvements
+        imageTimeout: 0,
+        removeContainer: true,
+
+        // Advanced rendering options
+        renderOptions: {
+          // Attempt to improve rendering of complex elements
+          ignoreElements: (element) => {
+            return (
+              element.tagName === 'SCRIPT' ||
+              element.tagName === 'LINK' ||
+              element.classList.contains('ignore-pdf')
+            );
+          },
+
+          // Optional: Improve image rendering
+          onclone: (document) => {
+            // Replace any problematic image sources
+            const images = document.getElementsByTagName('img');
+            for (let img of images) {
+              if (img.src.startsWith('blob:')) {
+                img.crossOrigin = 'Anonymous';
+              }
+            }
+          },
+        },
+      });
+
+      // Exit PDF mode
+      setIsPdfMode(false);
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: 'a4',
+      });
+
+      // Get PDF page dimensions
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      // Calculate image dimensions to fit PDF
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+
+      const width = imgWidth * ratio;
+      const height = imgHeight * ratio;
+
+      // Center the image
+      const x = (pdfWidth - width) / 2;
+      const y = (pdfHeight - height) / 2;
+
+      pdf.addImage(imgData, 'PNG', x, y, width, height);
+      pdf.save('ramaini-registration-form.pdf');
+    } catch (error) {
+      // Ensure PDF mode is turned off in case of error
+      setIsPdfMode(false);
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please check the console for details.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#2a1533] p-4 flex justify-center">
       <div
-        className="bg-white rounded-lg shadow-xl p-6 w-full max-w-4xl my-8"
-        ref={formRef}
+        ref={printRef}
+        className="bg-white rounded-lg shadow-xl p-6 w-full max-w-5xl my-8"
       >
         <div className="text-center mb-6">
           <div className="bg-red-600 text-white py-2 px-4 rounded-lg inline-block mb-4">
-            <h1 className="text-xl font-bold">Jai Purnabrahma Kabir Saheb</h1>
+            <div className="text-xl font-bold">Jai Purnabrahma Kabir Saheb</div>
           </div>
           <h2 className="text-2xl font-semibold text-gray-800">
             Ramaini (Marriage) Registration Form
           </h2>
           <div className="flex justify-center mt-2">
-            <div className="h-8 w-full max-w-[100px] bg-gray-200 rounded"></div>
+            <img
+              src="https://placehold.co/150x50"
+              alt="Decorative element"
+              className="h-8"
+            />
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col md:flex-row justify-between gap-6">
-            <div className="border border-gray-300 w-32 h-36 flex flex-col items-center justify-center">
+            <div className="border-2 border-dashed border-purple-300 rounded-2xl w-32 h-36 flex flex-col items-center justify-center">
               <input
                 type="file"
                 id="girlPhoto"
                 accept="image/*"
-                onChange={e => handleFileChange(e, setGirlPhoto)}
+                onChange={(e) => handleFileChange(e, setGirlPhoto)}
                 className="hidden"
               />
               <label
                 htmlFor="girlPhoto"
                 className="cursor-pointer flex flex-col items-center justify-center w-full h-full text-center text-sm text-gray-500 hover:bg-gray-50"
               >
-                {girlPhoto.preview ? (
+                {girlPhoto.file ? (
                   <div className="w-full h-full flex items-center justify-center">
                     <img
                       src={girlPhoto.preview}
                       alt="Preview"
-                       crossOrigin="anonymous"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover rounded-lg"
                     />
                   </div>
                 ) : (
@@ -240,9 +268,9 @@ export default function BoyForm() {
                     Do not upload photo older than 1 month.
                     <br />
                     <span className="text-xs">
-                      photo of Boy
+                      photo of girl
                       <br />
-                      groom's photo
+                      bride's photo
                     </span>
                   </p>
                 )}
@@ -251,18 +279,18 @@ export default function BoyForm() {
 
             <div className="flex-grow">
               <h3 className="text-lg font-medium text-gray-700 mb-4 text-center">
-                Boy's family information
+                Girl's family information
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center">
                   <label className="w-1/2 text-sm font-medium text-gray-700">
-                    Boy's Name:
+                    Girl's Name:
                   </label>
                   <input
                     type="text"
-                    name="boyName"
-                    value={formData.boyName}
+                    name="girlName"
+                    value={formData.girlName}
                     onChange={handleChange}
                     className="w-1/2 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
                   />
@@ -270,12 +298,12 @@ export default function BoyForm() {
 
                 <div className="flex items-center">
                   <label className="w-1/2 text-sm font-medium text-gray-700">
-                    Boy's father's name:
+                    Girl's father's name:
                   </label>
                   <input
                     type="text"
-                    name="boyFatherName"
-                    value={formData.boyFatherName}
+                    name="girlFatherName"
+                    value={formData.girlFatherName}
                     onChange={handleChange}
                     className="w-1/2 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
                   />
@@ -283,12 +311,12 @@ export default function BoyForm() {
 
                 <div className="flex items-center">
                   <label className="w-1/2 text-sm font-medium text-gray-700">
-                    Boy's Mother's Name:
+                    Girl's Mother's Name:
                   </label>
                   <input
                     type="text"
-                    name="boyMotherName"
-                    value={formData.boyMotherName}
+                    name="girlMotherName"
+                    value={formData.girlMotherName}
                     onChange={handleChange}
                     className="w-1/2 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
                   />
@@ -296,12 +324,12 @@ export default function BoyForm() {
 
                 <div className="flex items-center">
                   <label className="w-1/3 text-sm font-medium text-gray-700">
-                    Boy's date of birth:
+                    Girl's date of birth:
                   </label>
                   <input
                     type="date"
-                    name="boyDOB"
-                    value={formData.boyDOB}
+                    name="girlDOB"
+                    value={formData.girlDOB}
                     onChange={handleChange}
                     className="w-1/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
                   />
@@ -310,8 +338,8 @@ export default function BoyForm() {
                   </label>
                   <input
                     type="number"
-                    name="boyAge"
-                    value={formData.boyAge}
+                    name="girlAge"
+                    value={formData.girlAge}
                     onChange={handleChange}
                     className="w-1/6 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
                   />
@@ -319,25 +347,24 @@ export default function BoyForm() {
               </div>
             </div>
 
-            <div className="border border-gray-300 w-32 h-36 flex flex-col items-center justify-center">
+            <div className="border-2 border-dashed border-purple-300 rounded-2xl w-32 h-36 flex flex-col items-center justify-center">
               <input
                 type="file"
                 id="boyPhoto"
                 accept="image/*"
-                onChange={e => handleFileChange(e, setBoyPhoto)}
+                onChange={(e) => handleFileChange(e, setBoyPhoto)}
                 className="hidden"
               />
               <label
                 htmlFor="boyPhoto"
                 className="cursor-pointer flex flex-col items-center justify-center w-full h-full text-center text-sm text-gray-500 hover:bg-gray-50"
               >
-                {boyPhoto.preview ? (
+                {boyPhoto.file ? (
                   <div className="w-full h-full flex items-center justify-center">
                     <img
                       src={boyPhoto.preview}
                       alt="Preview"
-                       crossOrigin="anonymous"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover rounded-lg"
                     />
                   </div>
                 ) : (
@@ -476,7 +503,7 @@ export default function BoyForm() {
 
           <div className="space-y-4">
             <div className="flex flex-wrap items-baseline">
-              <span className="text-sm mr-1">I am Mr</span>
+              <span className="text-sm mr-1">I am Mr./Mrs.</span>
               <input
                 type="text"
                 name="declarantName"
@@ -524,7 +551,7 @@ export default function BoyForm() {
 
             <div className="flex flex-wrap items-baseline">
               <span className="text-sm mr-1">
-                I hereby declare that I my son
+                I hereby declare that I my son / daughter
               </span>
               <input
                 type="text"
@@ -587,7 +614,7 @@ export default function BoyForm() {
 
           <div className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm mb-4">
-              I am getting my son married (Ramaini) with my full consent. I
+              I am getting my daughter married (Ramaini) with my full consent. I
               assure that the bride and groom fulfill the age limit prescribed
               under the Indian Marriage Act, 1955 and all the necessary legal
               procedures have been followed for this marriage/Ramaini.
@@ -596,7 +623,7 @@ export default function BoyForm() {
             <div className="space-y-3">
               <div className="flex items-center">
                 <span className="text-sm mr-4">
-                  • Has your son attained the age of 18 years as per the
+                  • Has your daughter attained the age of 18 years as per the
                   government rules?
                 </span>
                 <div className="flex items-center space-x-2">
@@ -605,7 +632,7 @@ export default function BoyForm() {
                     id="isAdultYes"
                     name="isAdult"
                     value="Yes"
-                    checked={formData.isAdult === "Yes"}
+                    checked={formData.isAdult === 'Yes'}
                     onChange={handleRadioChange}
                     className="text-[#2a1533] focus:ring-[#2a1533]"
                   />
@@ -618,7 +645,7 @@ export default function BoyForm() {
                     id="isAdultNo"
                     name="isAdult"
                     value="No"
-                    checked={formData.isAdult === "No"}
+                    checked={formData.isAdult === 'No'}
                     onChange={handleRadioChange}
                     className="ml-4 text-[#2a1533] focus:ring-[#2a1533]"
                   />
@@ -639,7 +666,7 @@ export default function BoyForm() {
                     id="isDowryFreeYes"
                     name="isDowryFree"
                     value="Yes"
-                    checked={formData.isDowryFree === "Yes"}
+                    checked={formData.isDowryFree === 'Yes'}
                     onChange={handleRadioChange}
                     className="text-[#2a1533] focus:ring-[#2a1533]"
                   />
@@ -652,7 +679,7 @@ export default function BoyForm() {
                     id="isDowryFreeNo"
                     name="isDowryFree"
                     value="No"
-                    checked={formData.isDowryFree === "No"}
+                    checked={formData.isDowryFree === 'No'}
                     onChange={handleRadioChange}
                     className="ml-4 text-[#2a1533] focus:ring-[#2a1533]"
                   />
@@ -673,7 +700,7 @@ export default function BoyForm() {
                     id="agreeWithRulesYes"
                     name="agreeWithRules"
                     value="Yes"
-                    checked={formData.agreeWithRules === "Yes"}
+                    checked={formData.agreeWithRules === 'Yes'}
                     onChange={handleRadioChange}
                     className="text-[#2a1533] focus:ring-[#2a1533]"
                   />
@@ -686,7 +713,7 @@ export default function BoyForm() {
                     id="agreeWithRulesNo"
                     name="agreeWithRules"
                     value="No"
-                    checked={formData.agreeWithRules === "No"}
+                    checked={formData.agreeWithRules === 'No'}
                     onChange={handleRadioChange}
                     className="ml-4 text-[#2a1533] focus:ring-[#2a1533]"
                   />
@@ -698,7 +725,7 @@ export default function BoyForm() {
 
               <div className="flex items-center">
                 <span className="text-sm mr-4">
-                  • Is the boy already married?
+                  • Is the girl already married?
                 </span>
                 <div className="flex items-center space-x-2">
                   <input
@@ -706,7 +733,7 @@ export default function BoyForm() {
                     id="isAlreadyMarriedYes"
                     name="isAlreadyMarried"
                     value="Yes"
-                    checked={formData.isAlreadyMarried === "Yes"}
+                    checked={formData.isAlreadyMarried === 'Yes'}
                     onChange={handleRadioChange}
                     className="text-[#2a1533] focus:ring-[#2a1533]"
                   />
@@ -719,7 +746,7 @@ export default function BoyForm() {
                     id="isAlreadyMarriedNo"
                     name="isAlreadyMarried"
                     value="No"
-                    checked={formData.isAlreadyMarried === "No"}
+                    checked={formData.isAlreadyMarried === 'No'}
                     onChange={handleRadioChange}
                     className="ml-4 text-[#2a1533] focus:ring-[#2a1533]"
                   />
@@ -745,7 +772,7 @@ export default function BoyForm() {
 
             <div className="bg-red-100 border border-red-300 p-3 rounded-md text-sm">
               <span className="font-semibold">Note:</span> Aadhaar card of boy
-              and boys and parents, photocopy of Namdiksha form, 10th mark sheet
+              and girl and parents, photocopy of Namdiksha form, 10th mark sheet
               and photo of both are mandatory to be attached with the form.
             </div>
           </div>
@@ -754,26 +781,25 @@ export default function BoyForm() {
             <div className="space-y-4">
               <div className="border-b border-gray-300 pb-2">
                 <h3 className="text-sm font-medium text-gray-700 mb-2">
-                  Signature of the Boy's family
+                  Signature of the girl's family
                 </h3>
                 <input
                   type="file"
                   id="familySignature"
                   accept="image/*"
-                  onChange={e => handleFileChange(e, setFamilySignature)}
+                  onChange={(e) => handleFileChange(e, setFamilySignature)}
                   className="hidden"
                 />
                 <label
                   htmlFor="familySignature"
                   className="cursor-pointer flex items-center justify-center w-full h-20 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-50"
                 >
-                  {familySignature.preview ? (
+                  {familySignature.file ? (
                     <div className="w-full h-full flex items-center justify-center">
                       <img
                         src={familySignature.preview}
                         alt="Family Signature Preview"
-                         crossOrigin="anonymous"
-                        className="h-full object-contain"
+                        className="h-full object-contain rounded-lg"
                       />
                     </div>
                   ) : (
@@ -791,8 +817,8 @@ export default function BoyForm() {
                   </label>
                   <input
                     type="text"
-                    name="boySignatureName"
-                    value={formData.boySignatureName}
+                    name="girlSignatureName"
+                    value={formData.girlSignatureName}
                     onChange={handleChange}
                     className="w-2/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
                   />
@@ -804,8 +830,8 @@ export default function BoyForm() {
                   </label>
                   <input
                     type="tel"
-                    name="boySignatureMobile"
-                    value={formData.boySignatureMobile}
+                    name="girlSignatureMobile"
+                    value={formData.girlSignatureMobile}
                     onChange={handleChange}
                     className="w-2/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
                   />
@@ -813,12 +839,12 @@ export default function BoyForm() {
 
                 <div className="flex items-center">
                   <label className="w-1/3 text-sm font-medium text-gray-700">
-                    Relationship with boy:
+                    Relationship with girl:
                   </label>
                   <input
                     type="text"
-                    name="boySignatureRelation"
-                    value={formData.boySignatureRelation}
+                    name="girlSignatureRelation"
+                    value={formData.girlSignatureRelation}
                     onChange={handleChange}
                     className="w-2/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
                   />
@@ -830,8 +856,8 @@ export default function BoyForm() {
                   </label>
                   <input
                     type="date"
-                    name="boySignatureDate"
-                    value={formData.boySignatureDate}
+                    name="girlSignatureDate"
+                    value={formData.girlSignatureDate}
                     onChange={handleChange}
                     className="w-2/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
                   />
@@ -842,26 +868,25 @@ export default function BoyForm() {
             <div className="space-y-4">
               <div className="border-b border-gray-300 pb-2">
                 <h3 className="text-sm font-medium text-gray-700 mb-2">
-                  Signature of the boy (groom)
+                  Signature of the girl (bride)
                 </h3>
                 <input
                   type="file"
-                  id="boySignature"
+                  id="girlSignature"
                   accept="image/*"
-                  onChange={e => handleFileChange(e, setBoySignature)}
+                  onChange={(e) => handleFileChange(e, setGirlSignature)}
                   className="hidden"
                 />
                 <label
-                  htmlFor="boySignature"
+                  htmlFor="girlSignature"
                   className="cursor-pointer flex items-center justify-center w-full h-20 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-50"
                 >
-                  {boySignature.preview ? (
+                  {girlSignature.file ? (
                     <div className="w-full h-full flex items-center justify-center">
                       <img
-                        src={boySignature.preview}
-                        alt="Boy Signature Preview"
-                         crossOrigin="anonymous"
-                        className="h-full object-contain"
+                        src={girlSignature.preview}
+                        alt="Girl Signature Preview"
+                        className="h-full object-contain rounded-lg"
                       />
                     </div>
                   ) : (
@@ -874,56 +899,26 @@ export default function BoyForm() {
             </div>
           </div>
 
-          <div className="flex justify-center space-x-4 mt-8">
-            <button
-              type="submit"
-              className="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg transition duration-200"
-            >
-              Submit Registration
-            </button>
-
-            <button
-              type="button"
-              onClick={downloadPDF}
-              className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md flex items-center transition duration-200"
-            >
-              <Printer className="w-5 h-5 mr-2" />
-              Print Form
-            </button>
-          </div>
+          {!isPdfMode && (
+            <div className="flex justify-center mt-8">
+              <button
+                type="button"
+                onClick={handlePdfDownload}
+                className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg mr-4"
+              >
+                Download PDF
+              </button>
+              <button
+                type="submit"
+                onClick={handleSubmit}
+                className="px-8 cursor-pointer py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg shadow-lg"
+              >
+                Submit Registration
+              </button>
+            </div>
+          )}
         </form>
-
-        {/* Print instructions - only visible in print */}
-        <div className="hidden print:block mt-8 border-t border-gray-300 pt-4">
-          <h3 className="text-lg font-medium text-gray-800 mb-2">
-            Print Instructions
-          </h3>
-          <p className="text-sm text-gray-600">
-            1. Please ensure all information is correct before printing.
-            <br />
-            2. All signatures and photographs must be clear and visible.
-            <br />
-            3. Print on A4 size paper for best results.
-            <br />
-            4. Do not fold or damage the form after printing.
-          </p>
-        </div>
-
-        {/* Add print-specific styles */}
-        {/* <style jsx>{`
-          @media print {
-            body {
-              background: white !important;
-              -webkit-print-color-adjust: exact !important;
-              color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
-            .no-print {
-              display: none !important;
-            }
-          }
-        `}</style> */}
       </div>
     </div>
-  )
+  );
 }

@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import axios from 'axios';
+import html2canvas from 'html2canvas-pro';
+import jsPDF from 'jspdf';
 
 export default function GirlForm() {
   const [formData, setFormData] = useState({
@@ -37,74 +40,185 @@ export default function GirlForm() {
     girlSignatureDate: '',
   });
 
-  const [girlPhoto, setGirlPhoto] = useState(null);
-  const [boyPhoto, setBoyPhoto] = useState(null);
-  const [girlSignature, setGirlSignature] = useState(null);
-  const [familySignature, setFamilySignature] = useState(null);
+  const [girlPhoto, setGirlPhoto] = useState({ file: null, preview: null });
+  const [boyPhoto, setBoyPhoto] = useState({ file: null, preview: null });
+  const [girlSignature, setGirlSignature] = useState({
+    file: null,
+    preview: null,
+  });
+  const [familySignature, setFamilySignature] = useState({
+    file: null,
+    preview: null,
+  });
+
+  const printRef = useRef();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleRadioChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleFileChange = (e, setterFunction) => {
     const file = e.target.files[0];
     if (file) {
-      setterFunction(file);
+      // Create a URL for the file preview
+      const previewUrl = URL.createObjectURL(file);
+      // Update state with both file and preview URL
+      setterFunction({ file, preview: previewUrl });
     }
   };
 
-  const handleSubmit = (e) => {
+  /*   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Create FormData object for submitting files along with form data
     const submissionData = new FormData();
 
-    // Add all text form fields
     Object.keys(formData).forEach((key) => {
       submissionData.append(key, formData[key]);
     });
 
-    // Add file uploads
     if (girlPhoto) submissionData.append('girlPhoto', girlPhoto);
     if (boyPhoto) submissionData.append('boyPhoto', boyPhoto);
     if (girlSignature) submissionData.append('girlSignature', girlSignature);
     if (familySignature)
       submissionData.append('familySignature', familySignature);
 
-    // Here you would connect to your backend API
-    console.log('Form data:', formData);
-    console.log('Files:', {
-      girlPhoto,
-      boyPhoto,
-      girlSignature,
-      familySignature,
+    try {
+      const response = await axios.post(
+        'http://localhost:8888/api/girl/submit',
+        submissionData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      console.log('Form submitted successfully:', response.data);
+      alert('Form submitted successfully!');
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Failed to submit form.');
+    }
+  }; */
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const submissionData = new FormData();
+
+    Object.keys(formData).forEach((key) => {
+      submissionData.append(key, formData[key]);
     });
 
-    // API call would go here
-    // fetch('/api/marriage-registration', {
-    //   method: 'POST',
-    //   body: submissionData,
-    // });
+    if (girlPhoto.file) submissionData.append('girlPhoto', girlPhoto.file);
+    if (boyPhoto.file) submissionData.append('boyPhoto', boyPhoto.file);
+    if (girlSignature.file)
+      submissionData.append('girlSignature', girlSignature.file);
+    if (familySignature.file)
+      submissionData.append('familySignature', familySignature.file);
+
+    // Log each key-value in FormData
+    for (let pair of submissionData.entries()) {
+      console.log(`${pair[0]}:`, pair[1]);
+    }
+
+    alert('Form data logged in console.');
+  };
+
+  const handlePdfDownload = async () => {
+    try {
+      const element = printRef.current;
+
+      // Create a clone of the element with inline styles to avoid cross-origin issues
+      const clonedElement = element.cloneNode(true);
+
+      // Remove any complex Tailwind color classes
+      const replaceColorClasses = (el) => {
+        if (el.classList) {
+          // Replace problematic color classes
+          el.classList.forEach((cls) => {
+            if (cls.includes('bg-[') || cls.includes('text-[')) {
+              // Replace with standard Tailwind classes
+              if (cls.startsWith('bg-[')) {
+                el.classList.replace(cls, 'bg-white');
+              }
+              if (cls.startsWith('text-[')) {
+                el.classList.replace(cls, 'text-black');
+              }
+            }
+          });
+        }
+
+        // Recursively process child elements
+        if (el.children) {
+          Array.from(el.children).forEach(replaceColorClasses);
+        }
+      };
+
+      replaceColorClasses(clonedElement);
+
+      // Append cloned element to body temporarily
+      document.body.appendChild(clonedElement);
+
+      const canvas = await html2canvas(clonedElement, {
+        useCORS: true,
+        scale: 2,
+        logging: false,
+        allowTaint: true,
+        backgroundColor: '#ffffff', // Explicitly set white background
+        ignoreElements: (element) => {
+          return element.tagName === 'LINK' || element.tagName === 'SCRIPT';
+        },
+      });
+
+      // Remove the temporary cloned element
+      document.body.removeChild(clonedElement);
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: 'a4',
+      });
+
+      // Get PDF page dimensions
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      // Calculate image dimensions to fit PDF
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+
+      const width = imgWidth * ratio;
+      const height = imgHeight * ratio;
+
+      // Center the image
+      const x = (pdfWidth - width) / 2;
+      const y = (pdfHeight - height) / 2;
+
+      pdf.addImage(imgData, 'PNG', x, y, width, height);
+      pdf.save('ramaini-registration-form.pdf');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please check the console for details.');
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#2a1533] p-4 flex justify-center">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-4xl my-8">
+      <div
+        ref={printRef}
+        className="bg-white rounded-lg shadow-xl p-6 w-full max-w-[1200px] my-8"
+      >
         <div className="text-center mb-6">
           <div className="bg-red-600 text-white py-2 px-4 rounded-lg inline-block mb-4">
-            <h1 className="text-xl font-bold">Jai Purnabrahma Kabir Saheb</h1>
+            <h2 className="text-xl font-bold">Jai Purnabrahma Kabir Saheb</h2>
           </div>
           <h2 className="text-2xl font-semibold text-gray-800">
             Ramaini (Marriage) Registration Form
@@ -120,7 +234,7 @@ export default function GirlForm() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col md:flex-row justify-between gap-6">
-            <div className="border border-gray-300 w-32 h-36 flex flex-col items-center justify-center">
+            <div className="border-2 border-dashed border-purple-300 rounded-2xl w-32 h-36 flex flex-col items-center justify-center">
               <input
                 type="file"
                 id="girlPhoto"
@@ -132,10 +246,13 @@ export default function GirlForm() {
                 htmlFor="girlPhoto"
                 className="cursor-pointer flex flex-col items-center justify-center w-full h-full text-center text-sm text-gray-500 hover:bg-gray-50"
               >
-                {girlPhoto ? (
-                  <div className="text-center">
-                    <p className="text-green-600 font-medium">Photo selected</p>
-                    <p className="text-xs">{girlPhoto.name}</p>
+                {girlPhoto.file ? (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <img
+                      src={girlPhoto.preview}
+                      alt="Preview"
+                      className="w-full h-full object-cover rounded-lg"
+                    />
                   </div>
                 ) : (
                   <p>
@@ -221,7 +338,7 @@ export default function GirlForm() {
               </div>
             </div>
 
-            <div className="border border-gray-300 w-32 h-36 flex flex-col items-center justify-center">
+            <div className="border-2 border-dashed border-purple-300 rounded-2xl w-32 h-36 flex flex-col items-center justify-center">
               <input
                 type="file"
                 id="boyPhoto"
@@ -233,10 +350,13 @@ export default function GirlForm() {
                 htmlFor="boyPhoto"
                 className="cursor-pointer flex flex-col items-center justify-center w-full h-full text-center text-sm text-gray-500 hover:bg-gray-50"
               >
-                {boyPhoto ? (
-                  <div className="text-center">
-                    <p className="text-green-600 font-medium">Photo selected</p>
-                    <p className="text-xs">{boyPhoto.name}</p>
+                {boyPhoto.file ? (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <img
+                      src={boyPhoto.preview}
+                      alt="Preview"
+                      className="w-full h-full object-cover rounded-lg"
+                    />
                   </div>
                 ) : (
                   <p>
@@ -665,12 +785,13 @@ export default function GirlForm() {
                   htmlFor="familySignature"
                   className="cursor-pointer flex items-center justify-center w-full h-20 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-50"
                 >
-                  {familySignature ? (
-                    <div className="text-center">
-                      <p className="text-green-600 font-medium">
-                        Signature uploaded
-                      </p>
-                      <p className="text-xs">{familySignature.name}</p>
+                  {familySignature.file ? (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <img
+                        src={familySignature.preview}
+                        alt="Family Signature Preview"
+                        className="h-full object-contain rounded-lg"
+                      />
                     </div>
                   ) : (
                     <p className="text-sm text-gray-500">
@@ -751,12 +872,13 @@ export default function GirlForm() {
                   htmlFor="girlSignature"
                   className="cursor-pointer flex items-center justify-center w-full h-20 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-50"
                 >
-                  {girlSignature ? (
-                    <div className="text-center">
-                      <p className="text-green-600 font-medium">
-                        Signature uploaded
-                      </p>
-                      <p className="text-xs">{girlSignature.name}</p>
+                  {girlSignature.file ? (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <img
+                        src={girlSignature.preview}
+                        alt="Girl Signature Preview"
+                        className="h-full object-contain rounded-lg"
+                      />
                     </div>
                   ) : (
                     <p className="text-sm text-gray-500">
@@ -770,8 +892,15 @@ export default function GirlForm() {
 
           <div className="flex justify-center mt-8">
             <button
+              type="button"
+              onClick={handlePdfDownload}
+              className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg mr-4"
+            >
+              Download PDF
+            </button>
+            <button
               type="submit"
-              className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+              className="px-8 cursor-pointer py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg shadow-lg"
             >
               Submit Registration
             </button>
