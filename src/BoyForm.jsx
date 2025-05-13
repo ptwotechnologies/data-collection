@@ -740,6 +740,18 @@ export default function RamainiFormBoy() {
             </div>
           </div>
 
+          {/* Success/Error Message */}
+          {submitStatus === 'success' && (
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+              {t('success')}
+            </div>
+          )}
+          {submitStatus === 'error' && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {t('error')}
+            </div>
+          )}
+
           {/* Submit Button */}
           <div className="flex justify-center mt-6">
             <button

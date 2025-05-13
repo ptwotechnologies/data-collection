@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -332,7 +332,9 @@ export default function RamainiForm() {
       setterFunction({ file, preview: previewUrl });
     }
   };
-
+  useEffect(() => {
+    console.log('Submit status changed:', submitStatus);
+  }, [submitStatus]);
   const onSubmit = async (data) => {
     try {
       // Create FormData object for file uploads
@@ -395,18 +397,6 @@ export default function RamainiForm() {
             {t('toggleLanguage')}
           </button>
         </div>
-
-        {/* Success/Error Message */}
-        {submitStatus === 'success' && (
-          <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-            {t('success')}
-          </div>
-        )}
-        {submitStatus === 'error' && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            {t('error')}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Photo Upload Section */}
@@ -739,6 +729,18 @@ export default function RamainiForm() {
               </div>
             </div>
           </div>
+
+          {/* Status Messages */}
+          {submitStatus === 'success' && (
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded text-center">
+              {t('success')}
+            </div>
+          )}
+          {submitStatus === 'error' && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-center">
+              {t('error')}
+            </div>
+          )}
 
           {/* Submit Button */}
           <div className="flex justify-center mt-6">
