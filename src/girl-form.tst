@@ -52,6 +52,7 @@ export default function GirlForm() {
   });
 
   const printRef = useRef();
+  const [isPdfMode, setIsPdfMode] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -132,52 +133,58 @@ export default function GirlForm() {
 
   const handlePdfDownload = async () => {
     try {
+      // Enter PDF mode to hide buttons
+      setIsPdfMode(true);
+
+      // Small delay to ensure render completes
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       const element = printRef.current;
 
-      // Create a clone of the element with inline styles to avoid cross-origin issues
-      const clonedElement = element.cloneNode(true);
-
-      // Remove any complex Tailwind color classes
-      const replaceColorClasses = (el) => {
-        if (el.classList) {
-          // Replace problematic color classes
-          el.classList.forEach((cls) => {
-            if (cls.includes('bg-[') || cls.includes('text-[')) {
-              // Replace with standard Tailwind classes
-              if (cls.startsWith('bg-[')) {
-                el.classList.replace(cls, 'bg-white');
-              }
-              if (cls.startsWith('text-[')) {
-                el.classList.replace(cls, 'text-black');
-              }
-            }
-          });
-        }
-
-        // Recursively process child elements
-        if (el.children) {
-          Array.from(el.children).forEach(replaceColorClasses);
-        }
-      };
-
-      replaceColorClasses(clonedElement);
-
-      // Append cloned element to body temporarily
-      document.body.appendChild(clonedElement);
-
-      const canvas = await html2canvas(clonedElement, {
+      // Use html2canvas-pro with enhanced options
+      const canvas = await html2canvas(element, {
         useCORS: true,
         scale: 2,
         logging: false,
         allowTaint: true,
-        backgroundColor: '#ffffff', // Explicitly set white background
-        ignoreElements: (element) => {
-          return element.tagName === 'LINK' || element.tagName === 'SCRIPT';
+        backgroundColor: '#ffffff',
+
+        // html2canvas-pro specific options
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        windowWidth: document.documentElement.offsetWidth,
+        windowHeight: document.documentElement.offsetHeight,
+
+        // Additional rendering improvements
+        imageTimeout: 0,
+        removeContainer: true,
+
+        // Advanced rendering options
+        renderOptions: {
+          // Attempt to improve rendering of complex elements
+          ignoreElements: (element) => {
+            return (
+              element.tagName === 'SCRIPT' ||
+              element.tagName === 'LINK' ||
+              element.classList.contains('ignore-pdf')
+            );
+          },
+
+          // Optional: Improve image rendering
+          onclone: (document) => {
+            // Replace any problematic image sources
+            const images = document.getElementsByTagName('img');
+            for (let img of images) {
+              if (img.src.startsWith('blob:')) {
+                img.crossOrigin = 'Anonymous';
+              }
+            }
+          },
         },
       });
 
-      // Remove the temporary cloned element
-      document.body.removeChild(clonedElement);
+      // Exit PDF mode
+      setIsPdfMode(false);
 
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
@@ -205,6 +212,8 @@ export default function GirlForm() {
       pdf.addImage(imgData, 'PNG', x, y, width, height);
       pdf.save('ramaini-registration-form.pdf');
     } catch (error) {
+      // Ensure PDF mode is turned off in case of error
+      setIsPdfMode(false);
       console.error('Error generating PDF:', error);
       alert('Failed to generate PDF. Please check the console for details.');
     }
@@ -214,18 +223,18 @@ export default function GirlForm() {
     <div className="min-h-screen bg-[#2a1533] p-4 flex justify-center">
       <div
         ref={printRef}
-        className="bg-white rounded-lg shadow-xl p-6 w-full max-w-[1200px] my-8"
+        className="bg-white rounded-lg shadow-xl p-6 w-full max-w-5xl my-8"
       >
         <div className="text-center mb-6">
           <div className="bg-red-600 text-white py-2 px-4 rounded-lg inline-block mb-4">
-            <h2 className="text-xl font-bold">Jai Purnabrahma Kabir Saheb</h2>
+            <div className="text-xl font-bold">Jai Purnabrahma Kabir Saheb</div>
           </div>
           <h2 className="text-2xl font-semibold text-gray-800">
             Ramaini (Marriage) Registration Form
           </h2>
           <div className="flex justify-center mt-2">
             <img
-              src="/api/placeholder/100/50"
+              src="https://placehold.co/150x50"
               alt="Decorative element"
               className="h-8"
             />
@@ -890,21 +899,24 @@ export default function GirlForm() {
             </div>
           </div>
 
-          <div className="flex justify-center mt-8">
-            <button
-              type="button"
-              onClick={handlePdfDownload}
-              className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg mr-4"
-            >
-              Download PDF
-            </button>
-            <button
-              type="submit"
-              className="px-8 cursor-pointer py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg shadow-lg"
-            >
-              Submit Registration
-            </button>
-          </div>
+          {!isPdfMode && (
+            <div className="flex justify-center mt-8">
+              <button
+                type="button"
+                onClick={handlePdfDownload}
+                className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg mr-4"
+              >
+                Download PDF
+              </button>
+              <button
+                type="submit"
+                onClick={handleSubmit}
+                className="px-8 cursor-pointer py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg shadow-lg"
+              >
+                Submit Registration
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </div>

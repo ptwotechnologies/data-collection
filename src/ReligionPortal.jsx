@@ -129,7 +129,7 @@ export default function ReligiousPortal() {
                       onClick={handleRegisterAsGirl}
                       className="w-full py-2 bg-pink-400 hover:bg-pink-500 text-white font-medium rounded-t-md shadow-md"
                     >
-                      Register as Girl
+                      Register as Bride
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.03 }}
@@ -137,7 +137,7 @@ export default function ReligiousPortal() {
                       onClick={handleRegisterAsBoy}
                       className="w-full py-2 bg-purple-400 hover:bg-purle-500 text-white font-medium rounded-b-md shadow-md"
                     >
-                      Register as Boy
+                      Register as Groom
                     </motion.button>
                   </motion.div>
                 )}

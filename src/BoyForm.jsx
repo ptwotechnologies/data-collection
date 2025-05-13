@@ -1,48 +1,306 @@
-import { useState, useRef } from 'react';
-import axios from 'axios';
-import html2canvas from 'html2canvas-pro';
-import jsPDF from 'jspdf';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
 
-export default function BoyForm() {
-  const [formData, setFormData] = useState({
-    girlName: '',
-    girlFatherName: '',
-    girlMotherName: '',
-    girlDOB: '',
-    girlAge: '',
-    fullAddress: '',
-    tehsil: '',
-    district: '',
-    state: '',
-    mobileNumber: '',
-    firstNameReceiptDate: '',
-    satnamReceiptDate: '',
-    dateOfNameReceipt: '',
-    abstractReceiptDate: '',
-    declarantName: '',
-    declarantSon: '',
-    declarantResident: '',
-    wantToMarry: '',
-    wantToMarryState: '',
-    childName: '',
-    childFrom: '',
-    childDistrict: '',
-    ramainSiriNo: '',
-    location: '',
-    dateOfRamaini: '',
-    isAdult: 'No',
-    isDowryFree: 'No',
-    agreeWithRules: 'No',
-    isAlreadyMarried: 'No',
-    girlSignatureName: '',
-    girlSignatureMobile: '',
-    girlSignatureRelation: '',
-    girlSignatureDate: '',
-  });
+// Initialize i18n (same as girl's form)
+i18n.use(initReactI18next).init({
+  resources: {
+    en: {
+      translation: {
+        title: 'Ramaini (Marriage) Registration Form - Boy',
+        subtitle: 'Jai Purnabrahma Kabir Saheb',
+        personalInfo: 'Personal Information',
+        boyName: "Boy's Name",
+        boyFatherName: "Father's Name",
+        boyMotherName: "Mother's Name",
+        boyDOB: 'Date of Birth',
+        boyAge: 'Age',
+        contactInfo: 'Contact Information',
+        fullAddress: 'Full Address',
+        tehsil: 'Tehsil',
+        district: 'District',
+        state: 'State',
+        mobileNumber: 'Mobile Number',
+        religiousInfo: 'Religious Information',
+        firstNameReceiptDate: 'First Name Receipt Date',
+        satnamReceiptDate: 'Satnam Receipt Date',
+        nameReceiptDate: 'Name Receipt Date',
+        abstractReceiptDate: 'Abstract Receipt Date',
+        declaration: 'Declaration',
+        declarantInfo:
+          'I am {{name}}, {{relation}} of {{resident}}, wanting to marry {{person}} from {{state}}.',
+        marriageDetails: 'Marriage Details',
+        childName: "Child's Name",
+        childFrom: 'Child From',
+        childDistrict: 'Child District',
+        ramainiSiriNo: 'Ramaini Siri No.',
+        location: 'Location',
+        dateOfRamaini: 'Date of Ramaini',
+        questions: 'Important Questions',
+        isAdult:
+          'Has the boy attained the age of 21 years as per government rules?',
+        isDowryFree: 'Is this a dowry-free marriage?',
+        agreeWithRules: 'Do you agree with the rules of Ramaini marriage?',
+        isAlreadyMarried: 'Is the boy already married?',
+        note: 'Note: Aadhaar card of boy and girl and parents, photocopy of Namdiksha form, 10th mark sheet and photos are mandatory.',
+        signatureSection: 'Signatures',
+        familySignature: 'Family Signature',
+        boySignature: "Boy's Signature",
+        sigName: 'Name',
+        sigMobile: 'Mobile',
+        sigRelation: 'Relationship with boy',
+        date: 'Date',
+        submit: 'Submit Registration',
+        requiredField: 'This field is required',
+        invalidMobile: 'Invalid mobile number',
+        invalidAge: 'Age must be 21 or above',
+        yes: 'Yes',
+        no: 'No',
+        uploadPhoto: 'Upload Photo',
+        uploadSignature: 'Upload Signature',
+        success: 'Form submitted successfully!',
+        error: 'Error submitting form. Please try again.',
+        toggleLanguage: 'भाषा बदलें / Change Language',
+      },
+    },
+    hi: {
+      translation: {
+        title: 'रमैनी (विवाह) पंजीकरण प्रपत्र - लड़का',
+        subtitle: 'जय पूर्णब्रह्म कबीर साहेब',
+        personalInfo: 'व्यक्तिगत जानकारी',
+        boyName: 'लड़के का नाम',
+        boyFatherName: 'पिता का नाम',
+        boyMotherName: 'माता का नाम',
+        boyDOB: 'जन्म तिथि',
+        boyAge: 'आयु',
+        contactInfo: 'संपर्क जानकारी',
+        fullAddress: 'पूरा पता',
+        tehsil: 'तहसील',
+        district: 'जिला',
+        state: 'राज्य',
+        mobileNumber: 'मोबाइल नंबर',
+        religiousInfo: 'धार्मिक जानकारी',
+        firstNameReceiptDate: 'प्रथम नाम प्राप्ति तिथि',
+        satnamReceiptDate: 'सतनाम प्राप्ति तिथि',
+        nameReceiptDate: 'नाम प्राप्ति की तिथि',
+        abstractReceiptDate: 'सार प्राप्ति तिथि',
+        declaration: 'घोषणा',
+        declarantInfo:
+          'मैं {{name}}, {{resident}} का {{relation}}, {{state}} से {{person}} से विवाह करना चाहता हूं।',
+        marriageDetails: 'विवाह विवरण',
+        childName: 'बच्चे का नाम',
+        childFrom: 'बच्चा कहां से',
+        childDistrict: 'बच्चे का जिला',
+        ramainiSiriNo: 'रमैनी सिरी नंबर',
+        location: 'स्थान',
+        dateOfRamaini: 'रमैनी की तिथि',
+        questions: 'महत्वपूर्ण प्रश्न',
+        isAdult:
+          'क्या लड़का सरकारी नियमों के अनुसार 21 वर्ष की आयु प्राप्त कर चुका है?',
+        isDowryFree: 'क्या यह दहेज-मुक्त विवाह है?',
+        agreeWithRules: 'क्या आप रमैनी विवाह के नियमों से सहमत हैं?',
+        isAlreadyMarried: 'क्या लड़का पहले से विवाहित है?',
+        note: 'नोट: लड़के और लड़की और माता-पिता का आधार कार्ड, नामदीक्षा फॉर्म की फोटोकॉपी, 10वीं की मार्कशीट और फोटो अनिवार्य हैं।',
+        signatureSection: 'हस्ताक्षर',
+        familySignature: 'परिवार का हस्ताक्षर',
+        boySignature: 'लड़के का हस्ताक्षर',
+        sigName: 'नाम',
+        sigMobile: 'मोबाइल',
+        sigRelation: 'लड़के के साथ संबंध',
+        date: 'तिथि',
+        submit: 'पंजीकरण जमा करें',
+        requiredField: 'यह फ़ील्ड आवश्यक है',
+        invalidMobile: 'अमान्य मोबाइल नंबर',
+        invalidAge: 'आयु 21 या उससे अधिक होनी चाहिए',
+        yes: 'हां',
+        no: 'नहीं',
+        uploadPhoto: 'फोटो अपलोड करें',
+        uploadSignature: 'हस्ताक्षर अपलोड करें',
+        success: 'फॉर्म सफलतापूर्वक जमा किया गया!',
+        error: 'फॉर्म जमा करने में त्रुटि। कृपया पुनः प्रयास करें।',
+        toggleLanguage: 'Change Language / भाषा बदलें',
+      },
+    },
+  },
+  lng: 'en',
+  fallbackLng: 'en',
+  interpolation: {
+    escapeValue: false,
+  },
+});
 
-  const [girlPhoto, setGirlPhoto] = useState({ file: null, preview: null });
+// Create validation schema for boy's form
+const formSchema = z.object({
+  boyName: z.string().min(1, { message: 'requiredField' }),
+  boyFatherName: z.string().min(1, { message: 'requiredField' }),
+  boyMotherName: z.string().min(1, { message: 'requiredField' }),
+  boyDOB: z.string().min(1, { message: 'requiredField' }),
+  boyAge: z
+    .string()
+    .min(1, { message: 'requiredField' })
+    .refine((val) => parseInt(val) >= 21, { message: 'invalidAge' }),
+  fullAddress: z.string().min(1, { message: 'requiredField' }),
+  tehsil: z.string().min(1, { message: 'requiredField' }),
+  district: z.string().min(1, { message: 'requiredField' }),
+  state: z.string().min(1, { message: 'requiredField' }),
+  mobileNumber: z
+    .string()
+    .min(10, { message: 'invalidMobile' })
+    .max(15, { message: 'invalidMobile' }),
+  firstNameReceiptDate: z.string().optional(),
+  satnamReceiptDate: z.string().optional(),
+  dateOfNameReceipt: z.string().optional(),
+  abstractReceiptDate: z.string().optional(),
+  declarantName: z.string().min(1, { message: 'requiredField' }),
+  declarantSon: z.string().min(1, { message: 'requiredField' }),
+  declarantResident: z.string().min(1, { message: 'requiredField' }),
+  wantToMarry: z.string().min(1, { message: 'requiredField' }),
+  wantToMarryState: z.string().min(1, { message: 'requiredField' }),
+  childName: z.string().min(1, { message: 'requiredField' }),
+  childFrom: z.string().optional(),
+  childDistrict: z.string().optional(),
+  ramainSiriNo: z.string().optional(),
+  location: z.string().min(1, { message: 'requiredField' }),
+  dateOfRamaini: z.string().min(1, { message: 'requiredField' }),
+  isAdult: z.string().min(1, { message: 'requiredField' }),
+  isDowryFree: z.string().min(1, { message: 'requiredField' }),
+  agreeWithRules: z.string().min(1, { message: 'requiredField' }),
+  isAlreadyMarried: z.string().min(1, { message: 'requiredField' }),
+  boySignatureName: z.string().min(1, { message: 'requiredField' }),
+  boySignatureMobile: z
+    .string()
+    .min(10, { message: 'invalidMobile' })
+    .max(15, { message: 'invalidMobile' }),
+  boySignatureRelation: z.string().min(1, { message: 'requiredField' }),
+  boySignatureDate: z.string().min(1, { message: 'requiredField' }),
+});
+
+// File upload component (same as girl's form)
+const FileUpload = ({ id, label, onChange, preview }) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="rounded-lg w-full h-32">
+      <input
+        type="file"
+        id={id}
+        accept="image/*"
+        onChange={onChange}
+        className="hidden"
+      />
+      <label
+        htmlFor={id}
+        className="cursor-pointer flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-purple-300 rounded-lg hover:bg-purple-50"
+      >
+        {preview ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <img
+              src={preview}
+              alt="Preview"
+              className="h-full object-contain rounded-lg"
+            />
+          </div>
+        ) : (
+          <div className="text-center text-sm text-gray-500">
+            <svg
+              className="mx-auto h-8 w-8 text-gray-400"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <p>{t(label)}</p>
+          </div>
+        )}
+      </label>
+    </div>
+  );
+};
+
+// Input field component (same as girl's form)
+const InputField = ({
+  label,
+  name,
+  type = 'text',
+  register,
+  errors,
+  required = true,
+}) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="mb-3">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {t(label)}
+        {required && <span className="text-red-500">*</span>}
+      </label>
+      <input
+        type={type}
+        {...register(name)}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+      />
+      {errors[name] && (
+        <p className="mt-1 text-xs text-red-500">{t(errors[name].message)}</p>
+      )}
+    </div>
+  );
+};
+
+// Radio question component (same as girl's form)
+const RadioQuestion = ({ label, name, register, errors }) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="mb-4">
+      <p className="text-sm font-medium text-gray-700 mb-2">
+        {t(label)}
+        <span className="text-red-500">*</span>
+      </p>
+      <div className="flex space-x-4">
+        <label className="inline-flex items-center">
+          <input
+            type="radio"
+            {...register(name)}
+            value="Yes"
+            className="text-purple-600 focus:ring-purple-500"
+          />
+          <span className="ml-2 text-sm">{t('yes')}</span>
+        </label>
+        <label className="inline-flex items-center">
+          <input
+            type="radio"
+            {...register(name)}
+            value="No"
+            className="text-purple-600 focus:ring-purple-500"
+          />
+          <span className="ml-2 text-sm">{t('no')}</span>
+        </label>
+      </div>
+      {errors[name] && (
+        <p className="mt-1 text-xs text-red-500">{t(errors[name].message)}</p>
+      )}
+    </div>
+  );
+};
+
+// Main Form Component for Boy
+export default function RamainiFormBoy() {
+  const { t } = useTranslation();
+  const [language, setLanguage] = useState('en');
   const [boyPhoto, setBoyPhoto] = useState({ file: null, preview: null });
-  const [girlSignature, setGirlSignature] = useState({
+  const [girlPhoto, setGirlPhoto] = useState({ file: null, preview: null });
+  const [boySignature, setBoySignature] = useState({
     file: null,
     preview: null,
   });
@@ -50,873 +308,452 @@ export default function BoyForm() {
     file: null,
     preview: null,
   });
+  const [submitStatus, setSubmitStatus] = useState(null);
 
-  const printRef = useRef();
-  const [isPdfMode, setIsPdfMode] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: zodResolver(formSchema),
+  });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleRadioChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  const toggleLanguage = () => {
+    const newLang = language === 'en' ? 'hi' : 'en';
+    setLanguage(newLang);
+    i18n.changeLanguage(newLang);
   };
 
   const handleFileChange = (e, setterFunction) => {
     const file = e.target.files[0];
     if (file) {
-      // Create a URL for the file preview
       const previewUrl = URL.createObjectURL(file);
-      // Update state with both file and preview URL
       setterFunction({ file, preview: previewUrl });
     }
   };
 
-  /*   const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const submissionData = new FormData();
-
-    Object.keys(formData).forEach((key) => {
-      submissionData.append(key, formData[key]);
-    });
-
-    if (girlPhoto) submissionData.append('girlPhoto', girlPhoto);
-    if (boyPhoto) submissionData.append('boyPhoto', boyPhoto);
-    if (girlSignature) submissionData.append('girlSignature', girlSignature);
-    if (familySignature)
-      submissionData.append('familySignature', familySignature);
-
+  const onSubmit = async (data) => {
     try {
-      const response = await axios.post(
-        'http://localhost:8888/api/girl/submit',
-        submissionData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
+      // Create FormData object for file uploads
+      const submissionData = new FormData();
 
-      console.log('Form submitted successfully:', response.data);
-      alert('Form submitted successfully!');
+      // Add form fields
+      Object.keys(data).forEach((key) => {
+        submissionData.append(key, data[key]);
+      });
+
+      // Add files
+      if (boyPhoto.file) submissionData.append('boyPhoto', boyPhoto.file);
+      if (girlPhoto.file) submissionData.append('girlPhoto', girlPhoto.file);
+      if (boySignature.file)
+        submissionData.append('boySignature', boySignature.file);
+      if (familySignature.file)
+        submissionData.append('familySignature', familySignature.file);
+
+      // In a real application, you would send this to your server
+      // const response = await axios.post('/api/ramaini/submit', submissionData);
+
+      // For demo, we'll just log and show success
+      console.log('Form data:', data);
+      console.log('Files:', {
+        boyPhoto: boyPhoto.file,
+        girlPhoto: girlPhoto.file,
+        boySignature: boySignature.file,
+        familySignature: familySignature.file,
+      });
+
+      setSubmitStatus('success');
+
+      // Optional: Reset form after successful submission
+      // reset();
+      // setBoyPhoto({ file: null, preview: null });
+      // setGirlPhoto({ file: null, preview: null });
+      // setBoySignature({ file: null, preview: null });
+      // setFamilySignature({ file: null, preview: null });
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Failed to submit form.');
-    }
-  }; */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const submissionData = new FormData();
-
-    Object.keys(formData).forEach((key) => {
-      submissionData.append(key, formData[key]);
-    });
-
-    if (girlPhoto.file) submissionData.append('girlPhoto', girlPhoto.file);
-    if (boyPhoto.file) submissionData.append('boyPhoto', boyPhoto.file);
-    if (girlSignature.file)
-      submissionData.append('girlSignature', girlSignature.file);
-    if (familySignature.file)
-      submissionData.append('familySignature', familySignature.file);
-
-    // Log each key-value in FormData
-    for (let pair of submissionData.entries()) {
-      console.log(`${pair[0]}:`, pair[1]);
-    }
-
-    alert('Form data logged in console.');
-  };
-
-  const handlePdfDownload = async () => {
-    try {
-      // Enter PDF mode to hide buttons
-      setIsPdfMode(true);
-
-      // Small delay to ensure render completes
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      const element = printRef.current;
-
-      // Use html2canvas-pro with enhanced options
-      const canvas = await html2canvas(element, {
-        useCORS: true,
-        scale: 2,
-        logging: false,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-
-        // html2canvas-pro specific options
-        scrollX: 0,
-        scrollY: -window.scrollY,
-        windowWidth: document.documentElement.offsetWidth,
-        windowHeight: document.documentElement.offsetHeight,
-
-        // Additional rendering improvements
-        imageTimeout: 0,
-        removeContainer: true,
-
-        // Advanced rendering options
-        renderOptions: {
-          // Attempt to improve rendering of complex elements
-          ignoreElements: (element) => {
-            return (
-              element.tagName === 'SCRIPT' ||
-              element.tagName === 'LINK' ||
-              element.classList.contains('ignore-pdf')
-            );
-          },
-
-          // Optional: Improve image rendering
-          onclone: (document) => {
-            // Replace any problematic image sources
-            const images = document.getElementsByTagName('img');
-            for (let img of images) {
-              if (img.src.startsWith('blob:')) {
-                img.crossOrigin = 'Anonymous';
-              }
-            }
-          },
-        },
-      });
-
-      // Exit PDF mode
-      setIsPdfMode(false);
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'px',
-        format: 'a4',
-      });
-
-      // Get PDF page dimensions
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      // Calculate image dimensions to fit PDF
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-
-      const width = imgWidth * ratio;
-      const height = imgHeight * ratio;
-
-      // Center the image
-      const x = (pdfWidth - width) / 2;
-      const y = (pdfHeight - height) / 2;
-
-      pdf.addImage(imgData, 'PNG', x, y, width, height);
-      pdf.save('ramaini-registration-form.pdf');
-    } catch (error) {
-      // Ensure PDF mode is turned off in case of error
-      setIsPdfMode(false);
-      console.error('Error generating PDF:', error);
-      alert('Failed to generate PDF. Please check the console for details.');
+      setSubmitStatus('error');
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#2a1533] p-4 flex justify-center">
-      <div
-        ref={printRef}
-        className="bg-white rounded-lg shadow-xl p-6 w-full max-w-5xl my-8"
-      >
-        <div className="text-center mb-6">
-          <div className="bg-red-600 text-white py-2 px-4 rounded-lg inline-block mb-4">
-            <div className="text-xl font-bold">Jai Purnabrahma Kabir Saheb</div>
+    <div className="min-h-screen bg-purple-50 p-4 flex justify-center">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl my-4">
+        {/* Header with language toggle */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="text-center">
+            <div className="bg-red-600 text-white py-2 px-4 rounded-lg inline-block mb-2">
+              <div className="text-lg font-bold">{t('subtitle')}</div>
+            </div>
+            <h1 className="text-xl font-bold text-gray-800">{t('title')}</h1>
           </div>
-          <h2 className="text-2xl font-semibold text-gray-800">
-            Ramaini (Marriage) Registration Form
-          </h2>
-          <div className="flex justify-center mt-2">
-            <img
-              src="https://placehold.co/150x50"
-              alt="Decorative element"
-              className="h-8"
-            />
-          </div>
+          <button
+            onClick={toggleLanguage}
+            className="bg-purple-100 text-purple-800 px-3 py-2 rounded-md text-sm font-medium hover:bg-purple-200"
+          >
+            {t('toggleLanguage')}
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex flex-col md:flex-row justify-between gap-6">
-            <div className="border-2 border-dashed border-purple-300 rounded-2xl w-32 h-36 flex flex-col items-center justify-center">
-              <input
-                type="file"
-                id="girlPhoto"
-                accept="image/*"
-                onChange={(e) => handleFileChange(e, setGirlPhoto)}
-                className="hidden"
-              />
-              <label
-                htmlFor="girlPhoto"
-                className="cursor-pointer flex flex-col items-center justify-center w-full h-full text-center text-sm text-gray-500 hover:bg-gray-50"
-              >
-                {girlPhoto.file ? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <img
-                      src={girlPhoto.preview}
-                      alt="Preview"
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                  </div>
-                ) : (
-                  <p>
-                    Do not upload photo older than 1 month.
-                    <br />
-                    <span className="text-xs">
-                      photo of girl
-                      <br />
-                      bride's photo
-                    </span>
-                  </p>
-                )}
+        {/* Success/Error Message */}
+        {submitStatus === 'success' && (
+          <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+            {t('success')}
+          </div>
+        )}
+        {submitStatus === 'error' && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {t('error')}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Photo Upload Section */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="sm:w-1/2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('boyName')}
               </label>
-            </div>
-
-            <div className="flex-grow">
-              <h3 className="text-lg font-medium text-gray-700 mb-4 text-center">
-                Girl's family information
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700">
-                    Girl's Name:
-                  </label>
-                  <input
-                    type="text"
-                    name="girlName"
-                    value={formData.girlName}
-                    onChange={handleChange}
-                    className="w-1/2 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
-                  />
-                </div>
-
-                <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700">
-                    Girl's father's name:
-                  </label>
-                  <input
-                    type="text"
-                    name="girlFatherName"
-                    value={formData.girlFatherName}
-                    onChange={handleChange}
-                    className="w-1/2 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
-                  />
-                </div>
-
-                <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-gray-700">
-                    Girl's Mother's Name:
-                  </label>
-                  <input
-                    type="text"
-                    name="girlMotherName"
-                    value={formData.girlMotherName}
-                    onChange={handleChange}
-                    className="w-1/2 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
-                  />
-                </div>
-
-                <div className="flex items-center">
-                  <label className="w-1/3 text-sm font-medium text-gray-700">
-                    Girl's date of birth:
-                  </label>
-                  <input
-                    type="date"
-                    name="girlDOB"
-                    value={formData.girlDOB}
-                    onChange={handleChange}
-                    className="w-1/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
-                  />
-                  <label className="w-1/6 text-sm font-medium text-gray-700 ml-2">
-                    age:
-                  </label>
-                  <input
-                    type="number"
-                    name="girlAge"
-                    value={formData.girlAge}
-                    onChange={handleChange}
-                    className="w-1/6 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="border-2 border-dashed border-purple-300 rounded-2xl w-32 h-36 flex flex-col items-center justify-center">
-              <input
-                type="file"
+              <FileUpload
                 id="boyPhoto"
-                accept="image/*"
+                label="uploadPhoto"
                 onChange={(e) => handleFileChange(e, setBoyPhoto)}
-                className="hidden"
+                preview={boyPhoto.preview}
               />
-              <label
-                htmlFor="boyPhoto"
-                className="cursor-pointer flex flex-col items-center justify-center w-full h-full text-center text-sm text-gray-500 hover:bg-gray-50"
-              >
-                {boyPhoto.file ? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <img
-                      src={boyPhoto.preview}
-                      alt="Preview"
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                  </div>
-                ) : (
-                  <p>
-                    Do not upload photo older than 1 month.
-                    <br />
-                    <span className="text-xs">
-                      boy's photo
-                      <br />
-                      groom's photo
-                    </span>
-                  </p>
-                )}
+            </div>
+            <div className="sm:w-1/2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('wantToMarry')}
               </label>
+              <FileUpload
+                id="girlPhoto"
+                label="uploadPhoto"
+                onChange={(e) => handleFileChange(e, setGirlPhoto)}
+                preview={girlPhoto.preview}
+              />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center">
-              <label className="w-1/3 text-sm font-medium text-gray-700">
-                Full Address:
-              </label>
-              <input
-                type="text"
+          {/* Personal Information */}
+          <div className="bg-purple-50 p-4 rounded-lg mb-6">
+            <h2 className="text-lg font-medium text-purple-800 mb-3">
+              {t('personalInfo')}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <InputField
+                label="boyName"
+                name="boyName"
+                register={register}
+                errors={errors}
+              />
+              <InputField
+                label="boyFatherName"
+                name="boyFatherName"
+                register={register}
+                errors={errors}
+              />
+              <InputField
+                label="boyMotherName"
+                name="boyMotherName"
+                register={register}
+                errors={errors}
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <InputField
+                  label="boyDOB"
+                  name="boyDOB"
+                  type="date"
+                  register={register}
+                  errors={errors}
+                />
+                <InputField
+                  label="boyAge"
+                  name="boyAge"
+                  type="number"
+                  register={register}
+                  errors={errors}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Information */}
+          <div className="bg-purple-50 p-4 rounded-lg mb-6">
+            <h2 className="text-lg font-medium text-purple-800 mb-3">
+              {t('contactInfo')}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <InputField
+                label="fullAddress"
                 name="fullAddress"
-                value={formData.fullAddress}
-                onChange={handleChange}
-                className="w-2/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
+                register={register}
+                errors={errors}
               />
-            </div>
-
-            <div className="flex items-center">
-              <label className="w-1/3 text-sm font-medium text-gray-700">
-                Tehsil:
-              </label>
-              <input
-                type="text"
+              <InputField
+                label="tehsil"
                 name="tehsil"
-                value={formData.tehsil}
-                onChange={handleChange}
-                className="w-2/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
+                register={register}
+                errors={errors}
               />
-            </div>
-
-            <div className="flex items-center">
-              <label className="w-1/3 text-sm font-medium text-gray-700">
-                District:
-              </label>
-              <input
-                type="text"
+              <InputField
+                label="district"
                 name="district"
-                value={formData.district}
-                onChange={handleChange}
-                className="w-2/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
+                register={register}
+                errors={errors}
               />
-            </div>
-
-            <div className="flex items-center">
-              <label className="w-1/3 text-sm font-medium text-gray-700">
-                State:
-              </label>
-              <input
-                type="text"
+              <InputField
+                label="state"
                 name="state"
-                value={formData.state}
-                onChange={handleChange}
-                className="w-2/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
+                register={register}
+                errors={errors}
               />
-            </div>
-
-            <div className="flex items-center">
-              <label className="w-1/3 text-sm font-medium text-gray-700">
-                Mobile Number:
-              </label>
-              <input
-                type="tel"
+              <InputField
+                label="mobileNumber"
                 name="mobileNumber"
-                value={formData.mobileNumber}
-                onChange={handleChange}
-                className="w-2/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
+                register={register}
+                errors={errors}
               />
             </div>
+          </div>
 
-            <div className="flex items-center">
-              <label className="w-1/2 text-sm font-medium text-gray-700">
-                First name receipt date:
-              </label>
-              <input
-                type="date"
+          {/* Religious Information */}
+          <div className="bg-purple-50 p-4 rounded-lg mb-6">
+            <h2 className="text-lg font-medium text-purple-800 mb-3">
+              {t('religiousInfo')}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <InputField
+                label="firstNameReceiptDate"
                 name="firstNameReceiptDate"
-                value={formData.firstNameReceiptDate}
-                onChange={handleChange}
-                className="w-1/2 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
-              />
-            </div>
-
-            <div className="flex items-center">
-              <label className="w-1/3 text-sm font-medium text-gray-700">
-                Satnam receipt date:
-              </label>
-              <input
                 type="date"
+                register={register}
+                errors={errors}
+                required={false}
+              />
+              <InputField
+                label="satnamReceiptDate"
                 name="satnamReceiptDate"
-                value={formData.satnamReceiptDate}
-                onChange={handleChange}
-                className="w-2/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
-              />
-            </div>
-
-            <div className="flex items-center">
-              <label className="w-1/2 text-sm font-medium text-gray-700">
-                Date of receipt of name:
-              </label>
-              <input
                 type="date"
+                register={register}
+                errors={errors}
+                required={false}
+              />
+              <InputField
+                label="nameReceiptDate"
                 name="dateOfNameReceipt"
-                value={formData.dateOfNameReceipt}
-                onChange={handleChange}
-                className="w-1/2 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
-              />
-            </div>
-
-            <div className="flex items-center">
-              <label className="w-1/3 text-sm font-medium text-gray-700">
-                Abstract receipt date:
-              </label>
-              <input
                 type="date"
+                register={register}
+                errors={errors}
+                required={false}
+              />
+              <InputField
+                label="abstractReceiptDate"
                 name="abstractReceiptDate"
-                value={formData.abstractReceiptDate}
-                onChange={handleChange}
-                className="w-2/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-baseline">
-              <span className="text-sm mr-1">I am Mr./Mrs.</span>
-              <input
-                type="text"
-                name="declarantName"
-                value={formData.declarantName}
-                onChange={handleChange}
-                className="w-1/4 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm mx-1"
-              />
-              <span className="text-sm mr-1">Son/daughter:</span>
-              <input
-                type="text"
-                name="declarantSon"
-                value={formData.declarantSon}
-                onChange={handleChange}
-                className="w-1/4 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm mx-1"
-              />
-            </div>
-
-            <div className="flex flex-wrap items-baseline">
-              <span className="text-sm mr-1">Resident</span>
-              <input
-                type="text"
-                name="declarantResident"
-                value={formData.declarantResident}
-                onChange={handleChange}
-                className="w-1/4 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm mx-1"
-              />
-              <span className="text-sm mr-1">I want</span>
-              <input
-                type="text"
-                name="wantToMarry"
-                value={formData.wantToMarry}
-                onChange={handleChange}
-                className="w-1/6 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm mx-1"
-              />
-              <span className="text-sm mr-1">State</span>
-              <input
-                type="text"
-                name="wantToMarryState"
-                value={formData.wantToMarryState}
-                onChange={handleChange}
-                className="w-1/6 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm mx-1"
-              />
-              <span className="text-sm">to marry</span>
-            </div>
-
-            <div className="flex flex-wrap items-baseline">
-              <span className="text-sm mr-1">
-                I hereby declare that I my son / daughter
-              </span>
-              <input
-                type="text"
-                name="childName"
-                value={formData.childName}
-                onChange={handleChange}
-                className="w-1/4 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm mx-1"
-              />
-            </div>
-
-            <div className="flex flex-wrap items-baseline">
-              <span className="text-sm mr-1">From</span>
-              <input
-                type="text"
-                name="childFrom"
-                value={formData.childFrom}
-                onChange={handleChange}
-                className="w-1/6 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm mx-1"
-              />
-              <span className="text-sm mr-1">district /</span>
-              <input
-                type="text"
-                name="childDistrict"
-                value={formData.childDistrict}
-                onChange={handleChange}
-                className="w-1/6 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm mx-1"
-              />
-              <span className="text-sm mr-1">Ramaini Siri No.</span>
-              <input
-                type="text"
-                name="ramainSiriNo"
-                value={formData.ramainSiriNo}
-                onChange={handleChange}
-                className="w-1/6 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm mx-1"
-              />
-              <span className="text-sm">the</span>
-            </div>
-
-            <div className="flex flex-wrap items-baseline">
-              <span className="text-sm mr-1">
-                Location: Nandar Center/Ashram.
-              </span>
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                className="w-1/4 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm mx-1"
-              />
-              <span className="text-sm mr-1">Ji's daughter / son on date</span>
-              <input
                 type="date"
-                name="dateOfRamaini"
-                value={formData.dateOfRamaini}
-                onChange={handleChange}
-                className="w-1/6 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm mx-1"
+                register={register}
+                errors={errors}
+                required={false}
               />
             </div>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm mb-4">
-              I am getting my daughter married (Ramaini) with my full consent. I
-              assure that the bride and groom fulfill the age limit prescribed
-              under the Indian Marriage Act, 1955 and all the necessary legal
-              procedures have been followed for this marriage/Ramaini.
-            </p>
+          {/* Declaration & Marriage Details */}
+          <div className="bg-purple-50 p-4 rounded-lg mb-6">
+            <h2 className="text-lg font-medium text-purple-800 mb-3">
+              {t('declaration')}
+            </h2>
+            <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InputField
+                  label="sigName"
+                  name="declarantName"
+                  register={register}
+                  errors={errors}
+                />
+                <InputField
+                  label="sigRelation"
+                  name="declarantSon"
+                  register={register}
+                  errors={errors}
+                />
+                <InputField
+                  label="fullAddress"
+                  name="declarantResident"
+                  register={register}
+                  errors={errors}
+                />
+                <InputField
+                  label="childName"
+                  name="wantToMarry"
+                  register={register}
+                  errors={errors}
+                />
+                <InputField
+                  label="state"
+                  name="wantToMarryState"
+                  register={register}
+                  errors={errors}
+                />
+              </div>
+            </div>
 
+            <h2 className="text-lg font-medium text-purple-800 mt-6 mb-3">
+              {t('marriageDetails')}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <InputField
+                label="childName"
+                name="childName"
+                register={register}
+                errors={errors}
+              />
+              <InputField
+                label="childFrom"
+                name="childFrom"
+                register={register}
+                errors={errors}
+                required={false}
+              />
+              <InputField
+                label="childDistrict"
+                name="childDistrict"
+                register={register}
+                errors={errors}
+                required={false}
+              />
+              <InputField
+                label="ramainiSiriNo"
+                name="ramainSiriNo"
+                register={register}
+                errors={errors}
+                required={false}
+              />
+              <InputField
+                label="location"
+                name="location"
+                register={register}
+                errors={errors}
+              />
+              <InputField
+                label="dateOfRamaini"
+                name="dateOfRamaini"
+                type="date"
+                register={register}
+                errors={errors}
+              />
+            </div>
+          </div>
+
+          {/* Important Questions */}
+          <div className="bg-purple-50 p-4 rounded-lg mb-6">
+            <h2 className="text-lg font-medium text-purple-800 mb-3">
+              {t('questions')}
+            </h2>
             <div className="space-y-3">
-              <div className="flex items-center">
-                <span className="text-sm mr-4">
-                  • Has your daughter attained the age of 18 years as per the
-                  government rules?
-                </span>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="isAdultYes"
-                    name="isAdult"
-                    value="Yes"
-                    checked={formData.isAdult === 'Yes'}
-                    onChange={handleRadioChange}
-                    className="text-[#2a1533] focus:ring-[#2a1533]"
-                  />
-                  <label htmlFor="isAdultYes" className="text-sm">
-                    Yes
-                  </label>
+              <RadioQuestion
+                label="isAdult"
+                name="isAdult"
+                register={register}
+                errors={errors}
+              />
+              <RadioQuestion
+                label="isDowryFree"
+                name="isDowryFree"
+                register={register}
+                errors={errors}
+              />
+              <RadioQuestion
+                label="agreeWithRules"
+                name="agreeWithRules"
+                register={register}
+                errors={errors}
+              />
+              <RadioQuestion
+                label="isAlreadyMarried"
+                name="isAlreadyMarried"
+                register={register}
+                errors={errors}
+              />
 
-                  <input
-                    type="radio"
-                    id="isAdultNo"
-                    name="isAdult"
-                    value="No"
-                    checked={formData.isAdult === 'No'}
-                    onChange={handleRadioChange}
-                    className="ml-4 text-[#2a1533] focus:ring-[#2a1533]"
-                  />
-                  <label htmlFor="isAdultNo" className="text-sm">
-                    No
-                  </label>
-                </div>
+              <div className="bg-yellow-50 border border-yellow-300 p-3 rounded-md text-sm mt-4">
+                <span className="font-semibold">{t('note')}</span>
               </div>
-
-              <div className="flex items-center">
-                <span className="text-sm mr-4">
-                  • Have both the parties decided to have a dowry free marriage
-                  (Ramaini) keeping in mind their region, gotra etc.?
-                </span>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="isDowryFreeYes"
-                    name="isDowryFree"
-                    value="Yes"
-                    checked={formData.isDowryFree === 'Yes'}
-                    onChange={handleRadioChange}
-                    className="text-[#2a1533] focus:ring-[#2a1533]"
-                  />
-                  <label htmlFor="isDowryFreeYes" className="text-sm">
-                    Yes
-                  </label>
-
-                  <input
-                    type="radio"
-                    id="isDowryFreeNo"
-                    name="isDowryFree"
-                    value="No"
-                    checked={formData.isDowryFree === 'No'}
-                    onChange={handleRadioChange}
-                    className="ml-4 text-[#2a1533] focus:ring-[#2a1533]"
-                  />
-                  <label htmlFor="isDowryFreeNo" className="text-sm">
-                    No
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex items-center">
-                <span className="text-sm mr-4">
-                  • Do you agree with the rules of Ramaini marriage in Satlok
-                  Ashram?
-                </span>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="agreeWithRulesYes"
-                    name="agreeWithRules"
-                    value="Yes"
-                    checked={formData.agreeWithRules === 'Yes'}
-                    onChange={handleRadioChange}
-                    className="text-[#2a1533] focus:ring-[#2a1533]"
-                  />
-                  <label htmlFor="agreeWithRulesYes" className="text-sm">
-                    Yes
-                  </label>
-
-                  <input
-                    type="radio"
-                    id="agreeWithRulesNo"
-                    name="agreeWithRules"
-                    value="No"
-                    checked={formData.agreeWithRules === 'No'}
-                    onChange={handleRadioChange}
-                    className="ml-4 text-[#2a1533] focus:ring-[#2a1533]"
-                  />
-                  <label htmlFor="agreeWithRulesNo" className="text-sm">
-                    No
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex items-center">
-                <span className="text-sm mr-4">
-                  • Is the girl already married?
-                </span>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="isAlreadyMarriedYes"
-                    name="isAlreadyMarried"
-                    value="Yes"
-                    checked={formData.isAlreadyMarried === 'Yes'}
-                    onChange={handleRadioChange}
-                    className="text-[#2a1533] focus:ring-[#2a1533]"
-                  />
-                  <label htmlFor="isAlreadyMarriedYes" className="text-sm">
-                    Yes
-                  </label>
-
-                  <input
-                    type="radio"
-                    id="isAlreadyMarriedNo"
-                    name="isAlreadyMarried"
-                    value="No"
-                    checked={formData.isAlreadyMarried === 'No'}
-                    onChange={handleRadioChange}
-                    className="ml-4 text-[#2a1533] focus:ring-[#2a1533]"
-                  />
-                  <label htmlFor="isAlreadyMarriedNo" className="text-sm">
-                    No
-                  </label>
-                </div>
-              </div>
-
-              <p className="text-sm text-gray-600 italic">
-                (If yes then it is mandatory to attach the divorce papers with
-                the form, otherwise Ramani will not be done.)
-              </p>
             </div>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm mb-4">
-              I also declare that the above information given by me is true,
-              complete and correct. If any error or incorrectness is found in my
-              declaration, I will be fully responsible for it.
-            </p>
-
-            <div className="bg-red-100 border border-red-300 p-3 rounded-md text-sm">
-              <span className="font-semibold">Note:</span> Aadhaar card of boy
-              and girl and parents, photocopy of Namdiksha form, 10th mark sheet
-              and photo of both are mandatory to be attached with the form.
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-6">
-            <div className="space-y-4">
-              <div className="border-b border-gray-300 pb-2">
+          {/* Signatures */}
+          <div className="bg-purple-50 p-4 rounded-lg mb-6">
+            <h2 className="text-lg font-medium text-purple-800 mb-3">
+              {t('signatureSection')}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-2">
-                  Signature of the girl's family
+                  {t('familySignature')}
                 </h3>
-                <input
-                  type="file"
+                <FileUpload
                   id="familySignature"
-                  accept="image/*"
+                  label="uploadSignature"
                   onChange={(e) => handleFileChange(e, setFamilySignature)}
-                  className="hidden"
+                  preview={familySignature.preview}
                 />
-                <label
-                  htmlFor="familySignature"
-                  className="cursor-pointer flex items-center justify-center w-full h-20 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  {familySignature.file ? (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <img
-                        src={familySignature.preview}
-                        alt="Family Signature Preview"
-                        className="h-full object-contain rounded-lg"
-                      />
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500">
-                      Click to upload signature
-                    </p>
-                  )}
-                </label>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center">
-                  <label className="w-1/3 text-sm font-medium text-gray-700">
-                    Name:
-                  </label>
-                  <input
-                    type="text"
-                    name="girlSignatureName"
-                    value={formData.girlSignatureName}
-                    onChange={handleChange}
-                    className="w-2/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
+                <div className="mt-3">
+                  <InputField
+                    label="sigName"
+                    name="boySignatureName"
+                    register={register}
+                    errors={errors}
                   />
-                </div>
-
-                <div className="flex items-center">
-                  <label className="w-1/3 text-sm font-medium text-gray-700">
-                    Mobile Number:
-                  </label>
-                  <input
-                    type="tel"
-                    name="girlSignatureMobile"
-                    value={formData.girlSignatureMobile}
-                    onChange={handleChange}
-                    className="w-2/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
+                  <InputField
+                    label="sigMobile"
+                    name="boySignatureMobile"
+                    register={register}
+                    errors={errors}
                   />
-                </div>
-
-                <div className="flex items-center">
-                  <label className="w-1/3 text-sm font-medium text-gray-700">
-                    Relationship with girl:
-                  </label>
-                  <input
-                    type="text"
-                    name="girlSignatureRelation"
-                    value={formData.girlSignatureRelation}
-                    onChange={handleChange}
-                    className="w-2/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
+                  <InputField
+                    label="sigRelation"
+                    name="boySignatureRelation"
+                    register={register}
+                    errors={errors}
                   />
-                </div>
-
-                <div className="flex items-center">
-                  <label className="w-1/3 text-sm font-medium text-gray-700">
-                    Date:
-                  </label>
-                  <input
+                  <InputField
+                    label="date"
+                    name="boySignatureDate"
                     type="date"
-                    name="girlSignatureDate"
-                    value={formData.girlSignatureDate}
-                    onChange={handleChange}
-                    className="w-2/3 border-b border-gray-300 focus:border-[#2a1533] focus:ring-0 text-sm"
+                    register={register}
+                    errors={errors}
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="border-b border-gray-300 pb-2">
+              <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-2">
-                  Signature of the girl (bride)
+                  {t('boySignature')}
                 </h3>
-                <input
-                  type="file"
-                  id="girlSignature"
-                  accept="image/*"
-                  onChange={(e) => handleFileChange(e, setGirlSignature)}
-                  className="hidden"
+                <FileUpload
+                  id="boySignature"
+                  label="uploadSignature"
+                  onChange={(e) => handleFileChange(e, setBoySignature)}
+                  preview={boySignature.preview}
                 />
-                <label
-                  htmlFor="girlSignature"
-                  className="cursor-pointer flex items-center justify-center w-full h-20 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  {girlSignature.file ? (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <img
-                        src={girlSignature.preview}
-                        alt="Girl Signature Preview"
-                        className="h-full object-contain rounded-lg"
-                      />
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500">
-                      Click to upload signature
-                    </p>
-                  )}
-                </label>
               </div>
             </div>
           </div>
 
-          {!isPdfMode && (
-            <div className="flex justify-center mt-8">
-              <button
-                type="button"
-                onClick={handlePdfDownload}
-                className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg mr-4"
-              >
-                Download PDF
-              </button>
-              <button
-                type="submit"
-                onClick={handleSubmit}
-                className="px-8 cursor-pointer py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg shadow-lg"
-              >
-                Submit Registration
-              </button>
-            </div>
-          )}
+          {/* Submit Button */}
+          <div className="flex justify-center mt-6">
+            <button
+              type="submit"
+              className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow transition duration-300"
+            >
+              {t('submit')}
+            </button>
+          </div>
+
+          {/* Form note */}
+          <div className="text-center text-xs text-gray-500 mt-4">
+            {t('note')}
+          </div>
         </form>
       </div>
     </div>
