@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import RegisterModal from './RegisterModal';
 import LoginForm from './LoginForm';
+import bannerImage from './assets/banner.jpg';
 
 import { useNavigate } from 'react-router-dom';
 export default function ReligiousPortal() {
@@ -51,25 +52,25 @@ export default function ReligiousPortal() {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-[#2a1533]">
+    <div className="relative min-h-screen w-full bg-[url('/assess/banner.jpg')] bg-cover bg-center bg-no-repeat">
       {/* Banner Section */}
       <div
-        className="relative min-h-screen w-full flex flex-col items-center justify-center text-center p-8"
+        className="relative min-h-screen w-full flex flex-col items-center justify-center text-center p-4 md:p-8"
         style={{
-          backgroundColor: '#2a1533',
+          backgroundImage: `url(${bannerImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundBlend: 'overlay',
         }}
       >
-        <div className="absolute inset-0 bg-[#2a1533] bg-opacity-70"></div>
+        <div className="absolute inset-0 bg-opacity-70"></div>
 
-        <div className="relative z-10">
+        <div className="relative z-10 w-full max-w-4xl mx-auto px-4">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-5xl font-bold text-amber-100 mb-6"
+            className="text-3xl md:text-5xl font-bold text-amber-500 mb-4 md:mb-6"
           >
             Welcome to Our Spiritual Journey
           </motion.h1>
@@ -77,13 +78,15 @@ export default function ReligiousPortal() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-xl text-amber-50 mb-8 max-w-2xl mx-auto"
+            className="text-lg md:text-xl text-[#9e8573] font-bold mb-6 md:mb-8 max-w-2xl mx-auto"
           >
             Join our community of devotees and explore the path to spiritual
             enlightenment. Register to receive updates on events, rituals, and
             gatherings.
           </motion.p>
-          <div className="flex justify-center space-x-4">
+
+          {/* Responsive button layout - grid for mobile, flex for desktop */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-row md:justify-center gap-3 md:gap-4 w-full max-w-3xl mx-auto">
             <motion.button
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -91,22 +94,37 @@ export default function ReligiousPortal() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleOpenRegister}
-              className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+              className="px-4 md:px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
             >
               Register Now
             </motion.button>
 
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                navigate('/certificate');
+              }}
+              className="px-4 md:px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+            >
+              Download Form
+            </motion.button>
+
             {/* Get Married dropdown container */}
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <motion.button
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => setShowMarriageOptions(!showMarriageOptions)}
                 onMouseEnter={() => setShowMarriageOptions(true)}
                 onMouseLeave={() => setShowMarriageOptions(false)}
-                className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+                className="w-full px-4 md:px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
               >
                 Get Married
               </motion.button>
@@ -119,7 +137,7 @@ export default function ReligiousPortal() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute left-0 right-0 mt-2 flex flex-col"
+                    className="absolute left-0 right-0 mt-2 flex flex-col z-20"
                     onMouseEnter={() => setShowMarriageOptions(true)}
                     onMouseLeave={() => setShowMarriageOptions(false)}
                   >
@@ -129,15 +147,15 @@ export default function ReligiousPortal() {
                       onClick={handleRegisterAsGirl}
                       className="w-full py-2 bg-pink-400 hover:bg-pink-500 text-white font-medium rounded-t-md shadow-md"
                     >
-                      Register as Bride
+                      Register as Female
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
                       onClick={handleRegisterAsBoy}
-                      className="w-full py-2 bg-purple-400 hover:bg-purle-500 text-white font-medium rounded-b-md shadow-md"
+                      className="w-full py-2 bg-purple-400 hover:bg-purple-500 text-white font-medium rounded-b-md shadow-md"
                     >
-                      Register as Groom
+                      Register as Male
                     </motion.button>
                   </motion.div>
                 )}
@@ -154,7 +172,7 @@ export default function ReligiousPortal() {
                 handleClick();
                 handleOpenLogin();
               }}
-              className="px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+              className="px-4 md:px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
             >
               {isAdminLoggedIn ? 'Go to Dashboard' : 'Admin Sign In'}
             </motion.button>

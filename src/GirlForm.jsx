@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import axios from 'axios';
 
 // Initialize i18n
 i18n.use(initReactI18next).init({
@@ -332,9 +333,12 @@ export default function RamainiForm() {
       setterFunction({ file, preview: previewUrl });
     }
   };
+  // submission
   useEffect(() => {
     console.log('Submit status changed:', submitStatus);
   }, [submitStatus]);
+
+  // Form submission handler
   const onSubmit = async (data) => {
     try {
       // Create FormData object for file uploads
@@ -353,18 +357,18 @@ export default function RamainiForm() {
       if (familySignature.file)
         submissionData.append('familySignature', familySignature.file);
 
-      // In a real application, you would send this to your server
-      // const response = await axios.post('/api/ramaini/submit', submissionData);
+      // Send the form data to the server using axios
+      const response = await axios.post(
+        'https://data-collection-mig2.onrender.com/api/girl/submit',
+        submissionData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
 
-      // For demo, we'll just log and show success
-      console.log('Form data:', data);
-      console.log('Files:', {
-        girlPhoto: girlPhoto.file,
-        boyPhoto: boyPhoto.file,
-        girlSignature: girlSignature.file,
-        familySignature: familySignature.file,
-      });
-
+      console.log('Form submitted successfully:', response.data);
       setSubmitStatus('success');
 
       // Optional: Reset form after successful submission
@@ -383,57 +387,127 @@ export default function RamainiForm() {
     <div className="min-h-screen bg-purple-50 p-4 flex justify-center">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl my-4">
         {/* Header with language toggle */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="text-center">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          <div className="text-center w-full sm:w-auto">
             <div className="bg-red-600 text-white py-2 px-4 rounded-lg inline-block mb-2">
-              <div className="text-lg font-bold">{t('subtitle')}</div>
+              <div className="text-base sm:text-lg font-bold">
+                {t('subtitle')}
+              </div>
             </div>
-            <h1 className="text-xl font-bold text-gray-800">{t('title')}</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-800">
+              {t('title')}
+            </h1>
           </div>
           <button
             onClick={toggleLanguage}
-            className="bg-purple-100 text-purple-800 px-3 py-2 rounded-md text-sm font-medium hover:bg-purple-200"
+            className="bg-purple-100 text-purple-800 px-3 py-2 rounded-md text-sm font-medium hover:bg-purple-200 w-full sm:w-auto mt-2 sm:mt-0"
           >
             {t('toggleLanguage')}
           </button>
         </div>
-
-        {/* Success/Error Message */}
-        {submitStatus === 'success' && (
-          <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-            {t('success')}
-          </div>
-        )}
-        {submitStatus === 'error' && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            {t('error')}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Photo Upload Section */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="sm:w-1/2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('girlName')}
+                {t('Girl Photo')}
               </label>
-              <FileUpload
-                id="girlPhoto"
-                label="uploadPhoto"
-                onChange={(e) => handleFileChange(e, setGirlPhoto)}
-                preview={girlPhoto.preview}
-              />
+              <div className="flex justify-center">
+                <div className="w-32 h-40 rounded-lg overflow-hidden">
+                  {' '}
+                  {/* Passport size dimensions */}
+                  <input
+                    type="file"
+                    id="girlPhoto"
+                    accept="image/*"
+                    onChange={(e) => handleFileChange(e, setGirlPhoto)}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="girlPhoto"
+                    className="cursor-pointer flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-purple-300 rounded-lg hover:bg-purple-50"
+                  >
+                    {girlPhoto.preview ? (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <img
+                          src={girlPhoto.preview}
+                          alt="Girl Photo"
+                          className="h-full w-full object-cover rounded-lg"
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-center text-sm text-gray-500">
+                        <svg
+                          className="mx-auto h-8 w-8 text-gray-400"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <p>{t('uploadPhoto')}</p>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              </div>
             </div>
             <div className="sm:w-1/2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('wantToMarry')}
+                {t('Boy Photo')}
               </label>
-              <FileUpload
-                id="boyPhoto"
-                label="uploadPhoto"
-                onChange={(e) => handleFileChange(e, setBoyPhoto)}
-                preview={boyPhoto.preview}
-              />
+              <div className="flex justify-center">
+                <div className="w-32 h-40 rounded-lg overflow-hidden">
+                  {' '}
+                  {/* Passport size dimensions */}
+                  <input
+                    type="file"
+                    id="boyPhoto"
+                    accept="image/*"
+                    onChange={(e) => handleFileChange(e, setBoyPhoto)}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="boyPhoto"
+                    className="cursor-pointer flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-purple-300 rounded-lg hover:bg-purple-50"
+                  >
+                    {boyPhoto.preview ? (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <img
+                          src={boyPhoto.preview}
+                          alt="Boy Photo"
+                          className="h-full w-full object-cover rounded-lg"
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-center text-sm text-gray-500">
+                        <svg
+                          className="mx-auto h-8 w-8 text-gray-400"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <p>{t('uploadPhoto')}</p>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -741,18 +815,6 @@ export default function RamainiForm() {
               </div>
             </div>
           </div>
-
-          {/* Status Messages */}
-          {submitStatus === 'success' && (
-            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded text-center">
-              {t('success')}
-            </div>
-          )}
-          {submitStatus === 'error' && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-center">
-              {t('error')}
-            </div>
-          )}
 
           {/* Submit Button */}
           <div className="flex justify-center mt-6">

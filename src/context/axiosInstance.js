@@ -1,5 +1,5 @@
 import axios from 'axios';
-const API_BASE_URL = 'http://localhost:8888/api';
+const API_BASE_URL = 'https://data-collection-mig2.onrender.com/api';
 const token = localStorage.getItem('token');
 
 const axiosInstance = axios.create({
