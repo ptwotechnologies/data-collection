@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import axios from 'axios';
+import Header from './Header';
 
 // Initialize i18n
 i18n.use(initReactI18next).init({
@@ -195,7 +196,7 @@ const FileUpload = ({ id, label, onChange, preview }) => {
       />
       <label
         htmlFor={id}
-        className="cursor-pointer flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-purple-300 rounded-lg hover:bg-purple-50"
+        className="cursor-pointer flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-red-300 rounded-lg hover:bg-red-50"
       >
         {preview ? (
           <div className="w-full h-full flex items-center justify-center">
@@ -249,7 +250,7 @@ const InputField = ({
       <input
         type={type}
         {...register(name)}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
       />
       {errors[name] && (
         <p className="mt-1 text-xs text-red-500">{t(errors[name].message)}</p>
@@ -274,7 +275,7 @@ const RadioQuestion = ({ label, name, register, errors }) => {
             type="radio"
             {...register(name)}
             value="Yes"
-            className="text-purple-600 focus:ring-purple-500"
+            className="text-red-600 focus:ring-red-500"
           />
           <span className="ml-2 text-sm">{t('yes')}</span>
         </label>
@@ -283,7 +284,7 @@ const RadioQuestion = ({ label, name, register, errors }) => {
             type="radio"
             {...register(name)}
             value="No"
-            className="text-purple-600 focus:ring-purple-500"
+            className="text-red-600 focus:ring-red-500"
           />
           <span className="ml-2 text-sm">{t('no')}</span>
         </label>
@@ -384,466 +385,469 @@ export default function RamainiForm() {
   };
 
   return (
-    <div className="min-h-screen bg-purple-50 p-4 flex justify-center">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl my-4">
-        {/* Header with language toggle */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-          <div className="text-center w-full sm:w-auto">
-            <div className="bg-red-600 text-white py-2 px-4 rounded-lg inline-block mb-2">
-              <div className="text-base sm:text-lg font-bold">
-                {t('subtitle')}
+    <>
+      <Header />
+      <div className="min-h-screen bg-red-50 p-4 flex justify-center">
+        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl my-4">
+          {/* Header with language toggle */}
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+            <div className="text-center w-full sm:w-auto">
+              <div className="bg-red-600 text-white py-2 px-4 rounded-lg inline-block mb-2">
+                <div className="text-base sm:text-lg font-bold">
+                  {t('subtitle')}
+                </div>
               </div>
+              <h1 className="text-lg sm:text-xl font-bold text-gray-800">
+                {t('title')}
+              </h1>
             </div>
-            <h1 className="text-lg sm:text-xl font-bold text-gray-800">
-              {t('title')}
-            </h1>
+            <button
+              onClick={toggleLanguage}
+              className="bg-red-100 text-red-800 px-3 py-2 rounded-md text-sm font-medium hover:bg-red-200 w-full sm:w-auto mt-2 sm:mt-0"
+            >
+              {t('toggleLanguage')}
+            </button>
           </div>
-          <button
-            onClick={toggleLanguage}
-            className="bg-purple-100 text-purple-800 px-3 py-2 rounded-md text-sm font-medium hover:bg-purple-200 w-full sm:w-auto mt-2 sm:mt-0"
-          >
-            {t('toggleLanguage')}
-          </button>
-        </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Photo Upload Section */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Photo Upload Section */}
 
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="sm:w-1/2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('Girl Photo')}
-              </label>
-              <div className="flex justify-center">
-                <div className="w-32 h-40 rounded-lg overflow-hidden">
-                  {' '}
-                  {/* Passport size dimensions */}
-                  <input
-                    type="file"
-                    id="girlPhoto"
-                    accept="image/*"
-                    onChange={(e) => handleFileChange(e, setGirlPhoto)}
-                    className="hidden"
-                  />
-                  <label
-                    htmlFor="girlPhoto"
-                    className="cursor-pointer flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-purple-300 rounded-lg hover:bg-purple-50"
-                  >
-                    {girlPhoto.preview ? (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <img
-                          src={girlPhoto.preview}
-                          alt="Girl Photo"
-                          className="h-full w-full object-cover rounded-lg"
-                        />
-                      </div>
-                    ) : (
-                      <div className="text-center text-sm text-gray-500">
-                        <svg
-                          className="mx-auto h-8 w-8 text-gray-400"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <div className="sm:w-1/2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('Girl Photo')}
+                </label>
+                <div className="flex justify-center">
+                  <div className="w-32 h-40 rounded-lg overflow-hidden">
+                    {' '}
+                    {/* Passport size dimensions */}
+                    <input
+                      type="file"
+                      id="girlPhoto"
+                      accept="image/*"
+                      onChange={(e) => handleFileChange(e, setGirlPhoto)}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="girlPhoto"
+                      className="cursor-pointer flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-red-300 rounded-lg hover:bg-red-50"
+                    >
+                      {girlPhoto.preview ? (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <img
+                            src={girlPhoto.preview}
+                            alt="Girl Photo"
+                            className="h-full w-full object-cover rounded-lg"
                           />
-                        </svg>
-                        <p>{t('uploadPhoto')}</p>
-                      </div>
-                    )}
-                  </label>
+                        </div>
+                      ) : (
+                        <div className="text-center text-sm text-gray-500">
+                          <svg
+                            className="mx-auto h-8 w-8 text-gray-400"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                          <p>{t('uploadPhoto')}</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div className="sm:w-1/2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('Boy Photo')}
+                </label>
+                <div className="flex justify-center">
+                  <div className="w-32 h-40 rounded-lg overflow-hidden">
+                    {' '}
+                    {/* Passport size dimensions */}
+                    <input
+                      type="file"
+                      id="boyPhoto"
+                      accept="image/*"
+                      onChange={(e) => handleFileChange(e, setBoyPhoto)}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="boyPhoto"
+                      className="cursor-pointer flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-red-300 rounded-lg hover:bg-red-50"
+                    >
+                      {boyPhoto.preview ? (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <img
+                            src={boyPhoto.preview}
+                            alt="Boy Photo"
+                            className="h-full w-full object-cover rounded-lg"
+                          />
+                        </div>
+                      ) : (
+                        <div className="text-center text-sm text-gray-500">
+                          <svg
+                            className="mx-auto h-8 w-8 text-gray-400"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                          <p>{t('uploadPhoto')}</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="sm:w-1/2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('Boy Photo')}
-              </label>
-              <div className="flex justify-center">
-                <div className="w-32 h-40 rounded-lg overflow-hidden">
-                  {' '}
-                  {/* Passport size dimensions */}
-                  <input
-                    type="file"
-                    id="boyPhoto"
-                    accept="image/*"
-                    onChange={(e) => handleFileChange(e, setBoyPhoto)}
-                    className="hidden"
-                  />
-                  <label
-                    htmlFor="boyPhoto"
-                    className="cursor-pointer flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-purple-300 rounded-lg hover:bg-purple-50"
-                  >
-                    {boyPhoto.preview ? (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <img
-                          src={boyPhoto.preview}
-                          alt="Boy Photo"
-                          className="h-full w-full object-cover rounded-lg"
-                        />
-                      </div>
-                    ) : (
-                      <div className="text-center text-sm text-gray-500">
-                        <svg
-                          className="mx-auto h-8 w-8 text-gray-400"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                        <p>{t('uploadPhoto')}</p>
-                      </div>
-                    )}
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Personal Information */}
-          <div className="bg-purple-50 p-4 rounded-lg mb-6">
-            <h2 className="text-lg font-medium text-purple-800 mb-3">
-              {t('personalInfo')}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <InputField
-                label="boyName"
-                name="boyName"
-                register={register}
-                errors={errors}
-              />
-              <InputField
-                label="boyFatherName"
-                name="boyFatherName"
-                register={register}
-                errors={errors}
-              />
-              <InputField
-                label="boyMotherName"
-                name="boyMotherName"
-                register={register}
-                errors={errors}
-              />
-              <div className="grid grid-cols-2 gap-2">
-                <InputField
-                  label="boyDOB"
-                  name="boyDOB"
-                  type="date"
-                  register={register}
-                  errors={errors}
-                />
-                <InputField
-                  label="boyAge"
-                  name="boyAge"
-                  type="number"
-                  register={register}
-                  errors={errors}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Contact Information */}
-          <div className="bg-purple-50 p-4 rounded-lg mb-6">
-            <h2 className="text-lg font-medium text-purple-800 mb-3">
-              {t('contactInfo')}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <InputField
-                label="fullAddress"
-                name="fullAddress"
-                register={register}
-                errors={errors}
-              />
-              <InputField
-                label="tehsil"
-                name="tehsil"
-                register={register}
-                errors={errors}
-              />
-              <InputField
-                label="district"
-                name="district"
-                register={register}
-                errors={errors}
-              />
-              <InputField
-                label="state"
-                name="state"
-                register={register}
-                errors={errors}
-              />
-              <InputField
-                label="mobileNumber"
-                name="mobileNumber"
-                register={register}
-                errors={errors}
-              />
-            </div>
-          </div>
-
-          {/* Religious Information */}
-          <div className="bg-purple-50 p-4 rounded-lg mb-6">
-            <h2 className="text-lg font-medium text-purple-800 mb-3">
-              {t('religiousInfo')}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <InputField
-                label="firstNameReceiptDate"
-                name="firstNameReceiptDate"
-                type="date"
-                register={register}
-                errors={errors}
-                required={false}
-              />
-              <InputField
-                label="satnamReceiptDate"
-                name="satnamReceiptDate"
-                type="date"
-                register={register}
-                errors={errors}
-                required={false}
-              />
-              <InputField
-                label="nameReceiptDate"
-                name="dateOfNameReceipt"
-                type="date"
-                register={register}
-                errors={errors}
-                required={false}
-              />
-              <InputField
-                label="abstractReceiptDate"
-                name="abstractReceiptDate"
-                type="date"
-                register={register}
-                errors={errors}
-                required={false}
-              />
-            </div>
-          </div>
-
-          {/* Declaration & Marriage Details */}
-          <div className="bg-purple-50 p-4 rounded-lg mb-6">
-            <h2 className="text-lg font-medium text-purple-800 mb-3">
-              {t('declaration')}
-            </h2>
-            <div className="grid grid-cols-1 gap-4">
+            {/* Personal Information */}
+            <div className="bg-red-50 p-4 rounded-lg mb-6">
+              <h2 className="text-lg font-medium text-red-800 mb-3">
+                {t('personalInfo')}
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputField
-                  label="sigName"
-                  name="declarantName"
+                  label="boyName"
+                  name="boyName"
                   register={register}
                   errors={errors}
                 />
                 <InputField
-                  label="sigRelation"
-                  name="declarantSon"
+                  label="boyFatherName"
+                  name="boyFatherName"
                   register={register}
                   errors={errors}
                 />
+                <InputField
+                  label="boyMotherName"
+                  name="boyMotherName"
+                  register={register}
+                  errors={errors}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <InputField
+                    label="boyDOB"
+                    name="boyDOB"
+                    type="date"
+                    register={register}
+                    errors={errors}
+                  />
+                  <InputField
+                    label="boyAge"
+                    name="boyAge"
+                    type="number"
+                    register={register}
+                    errors={errors}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Information */}
+            <div className="bg-red-50 p-4 rounded-lg mb-6">
+              <h2 className="text-lg font-medium text-red-800 mb-3">
+                {t('contactInfo')}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputField
                   label="fullAddress"
-                  name="declarantResident"
+                  name="fullAddress"
                   register={register}
                   errors={errors}
                 />
                 <InputField
-                  label="childName"
-                  name="wantToMarry"
+                  label="tehsil"
+                  name="tehsil"
+                  register={register}
+                  errors={errors}
+                />
+                <InputField
+                  label="district"
+                  name="district"
                   register={register}
                   errors={errors}
                 />
                 <InputField
                   label="state"
-                  name="wantToMarryState"
+                  name="state"
+                  register={register}
+                  errors={errors}
+                />
+                <InputField
+                  label="mobileNumber"
+                  name="mobileNumber"
                   register={register}
                   errors={errors}
                 />
               </div>
             </div>
 
-            <h2 className="text-lg font-medium text-purple-800 mt-6 mb-3">
-              {t('marriageDetails')}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <InputField
-                label="childName"
-                name="childName"
-                register={register}
-                errors={errors}
-              />
-              <InputField
-                label="childFrom"
-                name="childFrom"
-                register={register}
-                errors={errors}
-                required={false}
-              />
-              <InputField
-                label="childDistrict"
-                name="childDistrict"
-                register={register}
-                errors={errors}
-                required={false}
-              />
-              <InputField
-                label="ramainiSiriNo"
-                name="ramainSiriNo"
-                register={register}
-                errors={errors}
-                required={false}
-              />
-              <InputField
-                label="location"
-                name="location"
-                register={register}
-                errors={errors}
-              />
-              <InputField
-                label="dateOfRamaini"
-                name="dateOfRamaini"
-                type="date"
-                register={register}
-                errors={errors}
-              />
-            </div>
-          </div>
-
-          {/* Important Questions */}
-          <div className="bg-purple-50 p-4 rounded-lg mb-6">
-            <h2 className="text-lg font-medium text-purple-800 mb-3">
-              {t('questions')}
-            </h2>
-            <div className="space-y-3">
-              <RadioQuestion
-                label="isAdult"
-                name="isAdult"
-                register={register}
-                errors={errors}
-              />
-              <RadioQuestion
-                label="isDowryFree"
-                name="isDowryFree"
-                register={register}
-                errors={errors}
-              />
-              <RadioQuestion
-                label="agreeWithRules"
-                name="agreeWithRules"
-                register={register}
-                errors={errors}
-              />
-              <RadioQuestion
-                label="isAlreadyMarried"
-                name="isAlreadyMarried"
-                register={register}
-                errors={errors}
-              />
-
-              <div className="bg-yellow-50 border border-yellow-300 p-3 rounded-md text-sm mt-4">
-                <span className="font-semibold">{t('note')}</span>
+            {/* Religious Information */}
+            <div className="bg-red-50 p-4 rounded-lg mb-6">
+              <h2 className="text-lg font-medium text-red-800 mb-3">
+                {t('religiousInfo')}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InputField
+                  label="firstNameReceiptDate"
+                  name="firstNameReceiptDate"
+                  type="date"
+                  register={register}
+                  errors={errors}
+                  required={false}
+                />
+                <InputField
+                  label="satnamReceiptDate"
+                  name="satnamReceiptDate"
+                  type="date"
+                  register={register}
+                  errors={errors}
+                  required={false}
+                />
+                <InputField
+                  label="nameReceiptDate"
+                  name="dateOfNameReceipt"
+                  type="date"
+                  register={register}
+                  errors={errors}
+                  required={false}
+                />
+                <InputField
+                  label="abstractReceiptDate"
+                  name="abstractReceiptDate"
+                  type="date"
+                  register={register}
+                  errors={errors}
+                  required={false}
+                />
               </div>
             </div>
-          </div>
 
-          {/* Signatures */}
-          <div className="bg-purple-50 p-4 rounded-lg mb-6">
-            <h2 className="text-lg font-medium text-purple-800 mb-3">
-              {t('signatureSection')}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">
-                  {t('familySignature')}
-                </h3>
-                <FileUpload
-                  id="familySignature"
-                  label="uploadSignature"
-                  onChange={(e) => handleFileChange(e, setFamilySignature)}
-                  preview={familySignature.preview}
-                />
-                <div className="mt-3">
+            {/* Declaration & Marriage Details */}
+            <div className="bg-red-50 p-4 rounded-lg mb-6">
+              <h2 className="text-lg font-medium text-red-800 mb-3">
+                {t('declaration')}
+              </h2>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <InputField
                     label="sigName"
-                    name="boySignatureName"
-                    register={register}
-                    errors={errors}
-                  />
-                  <InputField
-                    label="sigMobile"
-                    name="boySignatureMobile"
+                    name="declarantName"
                     register={register}
                     errors={errors}
                   />
                   <InputField
                     label="sigRelation"
-                    name="boySignatureRelation"
+                    name="declarantSon"
                     register={register}
                     errors={errors}
                   />
                   <InputField
-                    label="date"
-                    name="boySignatureDate"
-                    type="date"
+                    label="fullAddress"
+                    name="declarantResident"
+                    register={register}
+                    errors={errors}
+                  />
+                  <InputField
+                    label="childName"
+                    name="wantToMarry"
+                    register={register}
+                    errors={errors}
+                  />
+                  <InputField
+                    label="state"
+                    name="wantToMarryState"
                     register={register}
                     errors={errors}
                   />
                 </div>
               </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">
-                  {t('girlSignature')}
-                </h3>
-                <FileUpload
-                  id="girlSignature"
-                  label="uploadSignature"
-                  onChange={(e) => handleFileChange(e, setBoySignature)}
-                  preview={boySignature.preview}
+
+              <h2 className="text-lg font-medium text-red-800 mt-6 mb-3">
+                {t('marriageDetails')}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InputField
+                  label="childName"
+                  name="childName"
+                  register={register}
+                  errors={errors}
+                />
+                <InputField
+                  label="childFrom"
+                  name="childFrom"
+                  register={register}
+                  errors={errors}
+                  required={false}
+                />
+                <InputField
+                  label="childDistrict"
+                  name="childDistrict"
+                  register={register}
+                  errors={errors}
+                  required={false}
+                />
+                <InputField
+                  label="ramainiSiriNo"
+                  name="ramainSiriNo"
+                  register={register}
+                  errors={errors}
+                  required={false}
+                />
+                <InputField
+                  label="location"
+                  name="location"
+                  register={register}
+                  errors={errors}
+                />
+                <InputField
+                  label="dateOfRamaini"
+                  name="dateOfRamaini"
+                  type="date"
+                  register={register}
+                  errors={errors}
                 />
               </div>
             </div>
-          </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-center mt-6">
-            <button
-              type="submit"
-              className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow transition duration-300"
-            >
-              {t('submit')}
-            </button>
-          </div>
+            {/* Important Questions */}
+            <div className="bg-red-50 p-4 rounded-lg mb-6">
+              <h2 className="text-lg font-medium text-red-800 mb-3">
+                {t('questions')}
+              </h2>
+              <div className="space-y-3">
+                <RadioQuestion
+                  label="isAdult"
+                  name="isAdult"
+                  register={register}
+                  errors={errors}
+                />
+                <RadioQuestion
+                  label="isDowryFree"
+                  name="isDowryFree"
+                  register={register}
+                  errors={errors}
+                />
+                <RadioQuestion
+                  label="agreeWithRules"
+                  name="agreeWithRules"
+                  register={register}
+                  errors={errors}
+                />
+                <RadioQuestion
+                  label="isAlreadyMarried"
+                  name="isAlreadyMarried"
+                  register={register}
+                  errors={errors}
+                />
 
-          {/* Success/Error Message */}
-          {submitStatus === 'success' && (
-            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-              {t('success')}
+                <div className="bg-yellow-50 border border-yellow-300 p-3 rounded-md text-sm mt-4">
+                  <span className="font-semibold">{t('note')}</span>
+                </div>
+              </div>
             </div>
-          )}
-          {submitStatus === 'error' && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-              {t('error')}
+
+            {/* Signatures */}
+            <div className="bg-red-50 p-4 rounded-lg mb-6">
+              <h2 className="text-lg font-medium text-red-800 mb-3">
+                {t('signatureSection')}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    {t('familySignature')}
+                  </h3>
+                  <FileUpload
+                    id="familySignature"
+                    label="uploadSignature"
+                    onChange={(e) => handleFileChange(e, setFamilySignature)}
+                    preview={familySignature.preview}
+                  />
+                  <div className="mt-3">
+                    <InputField
+                      label="sigName"
+                      name="boySignatureName"
+                      register={register}
+                      errors={errors}
+                    />
+                    <InputField
+                      label="sigMobile"
+                      name="boySignatureMobile"
+                      register={register}
+                      errors={errors}
+                    />
+                    <InputField
+                      label="sigRelation"
+                      name="boySignatureRelation"
+                      register={register}
+                      errors={errors}
+                    />
+                    <InputField
+                      label="date"
+                      name="boySignatureDate"
+                      type="date"
+                      register={register}
+                      errors={errors}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    {t('girlSignature')}
+                  </h3>
+                  <FileUpload
+                    id="girlSignature"
+                    label="uploadSignature"
+                    onChange={(e) => handleFileChange(e, setBoySignature)}
+                    preview={boySignature.preview}
+                  />
+                </div>
+              </div>
             </div>
-          )}
-          {/* Form note */}
-          <div className="text-center text-xs text-gray-500 mt-4">
-            {t('note')}
-          </div>
-        </form>
+
+            {/* Submit Button */}
+            <div className="flex justify-center mt-6">
+              <button
+                type="submit"
+                className="px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow transition duration-300"
+              >
+                {t('submit')}
+              </button>
+            </div>
+
+            {/* Success/Error Message */}
+            {submitStatus === 'success' && (
+              <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+                {t('success')}
+              </div>
+            )}
+            {submitStatus === 'error' && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                {t('error')}
+              </div>
+            )}
+            {/* Form note */}
+            <div className="text-center text-xs text-gray-500 mt-4">
+              {t('note')}
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

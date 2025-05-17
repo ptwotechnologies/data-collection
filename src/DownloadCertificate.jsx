@@ -22,55 +22,61 @@ export default function DownloadCertificate() {
   const [error, setError] = useState('');
   const [bothFound, setBothFound] = useState(false);
 
-  // Function to fetch boy data by phone number
-  const fetchBoyData = async () => {
-    if (!boyPhone) return;
-
-    try {
-      setLoading(true);
-      const response = await axios.get(
-        `https://data-collection-mig2.onrender.com/api/boy/search?mobileNumber=${boyPhone}`
-      );
-      if (response.data.success) {
-        setBoyData(response.data.data);
-        setError('');
-      } else {
-        setBoyData(null);
-        setError('Boy data not found');
-      }
-    } catch (err) {
-      setError(
-        'Error fetching boy data: ' +
-          (err.response?.data?.message || err.message)
-      );
-      setBoyData(null);
-    } finally {
-      setLoading(false);
+  // Function to fetch both boy and girl data in one click
+  const fetchBothData = async () => {
+    if (!boyPhone || !girlPhone) {
+      setError('Please enter both boy and girl mobile numbers');
+      return;
     }
-  };
-
-  // Function to fetch girl data by phone number
-  const fetchGirlData = async () => {
-    if (!girlPhone) return;
 
     try {
       setLoading(true);
-      const response = await axios.get(
-        `https://data-collection-mig2.onrender.com/api/girl/search?mobileNumber=${girlPhone}`
-      );
-      if (response.data.success) {
-        setGirlData(response.data.data);
-        setError('');
-      } else {
-        setGirlData(null);
-        setError('Girl data not found');
+      setError('');
+
+      // Fetch boy data
+      const boyResponse = await axios
+        .get(
+          `https://data-collection-mig2.onrender.com/api/boy/search?mobileNumber=${boyPhone}`
+        )
+        .catch((err) => {
+          throw new Error(
+            `Boy data error: ${err.response?.data?.message || err.message}`
+          );
+        });
+
+      if (!boyResponse.data.success) {
+        setBoyData(null);
+        throw new Error('Boy data not found in the system');
       }
+
+      // Fetch girl data
+      const girlResponse = await axios
+        .get(
+          `https://data-collection-mig2.onrender.com/api/girl/search?mobileNumber=${girlPhone}`
+        )
+        .catch((err) => {
+          throw new Error(
+            `Girl data error: ${err.response?.data?.message || err.message}`
+          );
+        });
+
+      if (!girlResponse.data.success) {
+        setGirlData(null);
+        throw new Error('Girl data not found in the system');
+      }
+
+      // Set data if both requests were successful
+      setBoyData(boyResponse.data.data);
+      setGirlData(girlResponse.data.data);
     } catch (err) {
-      setError(
-        'Error fetching girl data: ' +
-          (err.response?.data?.message || err.message)
-      );
-      setGirlData(null);
+      setError(err.message);
+      // Reset data for whichever one failed
+      if (err.message.includes('Boy')) {
+        setBoyData(null);
+      }
+      if (err.message.includes('Girl')) {
+        setGirlData(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -86,7 +92,7 @@ export default function DownloadCertificate() {
   }, [boyData, girlData]);
 
   return (
-    <div className="min-h-screen bg-purple-50 p-4 flex justify-center">
+    <div className="min-h-screen bg-red-50 p-4 flex justify-center">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl my-4">
         {/* Header */}
         <div className="text-center mb-6">
@@ -100,14 +106,21 @@ export default function DownloadCertificate() {
 
         {/* Error display */}
         {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded relative">
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{error}</span>
+            <button
+              className="absolute top-0 right-0 px-3 py-1 text-red-600 hover:text-red-800"
+              onClick={() => setError('')}
+            >
+              ×
+            </button>
           </div>
         )}
 
         {/* Search Form */}
-        <div className="bg-purple-50 p-4 rounded-lg mb-6">
-          <h2 className="text-lg font-medium text-purple-800 mb-3">
+        <div className="bg-red-50 p-4 rounded-lg mb-6">
+          <h2 className="text-lg font-medium text-red-800 mb-3">
             Marriage Certificate Search
           </h2>
           <div className="grid grid-cols-1 gap-4">
@@ -118,22 +131,13 @@ export default function DownloadCertificate() {
                   Boy's Mobile Number
                   <span className="text-red-500">*</span>
                 </label>
-                <div className="flex">
-                  <input
-                    type="text"
-                    value={boyPhone}
-                    onChange={(e) => setBoyPhone(e.target.value)}
-                    className="flex-grow px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                    placeholder="Enter phone number"
-                  />
-                  <button
-                    onClick={fetchBoyData}
-                    disabled={loading || !boyPhone}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700 disabled:bg-gray-400"
-                  >
-                    {loading ? 'Loading...' : 'Search'}
-                  </button>
-                </div>
+                <input
+                  type="text"
+                  value={boyPhone}
+                  onChange={(e) => setBoyPhone(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
+                  placeholder="Enter phone number"
+                />
               </div>
 
               {/* Girl Phone Search */}
@@ -142,33 +146,59 @@ export default function DownloadCertificate() {
                   Girl's Mobile Number
                   <span className="text-red-500">*</span>
                 </label>
-                <div className="flex">
-                  <input
-                    type="text"
-                    value={girlPhone}
-                    onChange={(e) => setGirlPhone(e.target.value)}
-                    className="flex-grow px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                    placeholder="Enter phone number"
-                  />
-                  <button
-                    onClick={fetchGirlData}
-                    disabled={loading || !girlPhone}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700 disabled:bg-gray-400"
-                  >
-                    {loading ? 'Loading...' : 'Search'}
-                  </button>
-                </div>
+                <input
+                  type="text"
+                  value={girlPhone}
+                  onChange={(e) => setGirlPhone(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
+                  placeholder="Enter phone number"
+                />
               </div>
+            </div>
+
+            {/* Single Search Button */}
+            <div className="flex justify-center mt-2">
+              <button
+                onClick={fetchBothData}
+                disabled={loading || !boyPhone || !girlPhone}
+                className="bg-red-600 text-white px-8 py-2 rounded-md hover:bg-red-700 disabled:bg-gray-400 transition duration-200 flex items-center"
+              >
+                {loading ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Searching...
+                  </>
+                ) : (
+                  'Search Both Records'
+                )}
+              </button>
             </div>
           </div>
         </div>
 
         {/* Results Display */}
         {(boyData || girlData) && (
-          <div className="bg-purple-50 p-4 rounded-lg mb-6">
-            <h2 className="text-lg font-medium text-purple-800 mb-3">
-              Results
-            </h2>
+          <div className="bg-red-50 p-4 rounded-lg mb-6">
+            <h2 className="text-lg font-medium text-red-800 mb-3">Results</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Boy Data Summary */}
@@ -260,12 +290,12 @@ export default function DownloadCertificate() {
           <h3 className="font-medium mb-2">Instructions:</h3>
           <ol className="list-decimal pl-5 space-y-1">
             <li>
-              Enter both the boy's and girl's mobile numbers to search for their
-              form data.
+              Enter both the boy's and girl's mobile numbers in their respective
+              fields.
             </li>
             <li>
-              Click the "Search" button to retrieve information from the
-              database.
+              Click the "Search Both Records" button to retrieve information
+              from the database.
             </li>
             <li>
               If both individuals' information is successfully found, the

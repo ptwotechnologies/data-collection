@@ -52,12 +52,12 @@ export default function ReligiousPortal() {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-[url('/assess/banner.jpg')] bg-cover bg-center bg-no-repeat">
+    <div className="relative min-h-screen w-full  bg-cover bg-center bg-no-repeat">
       {/* Banner Section */}
       <div
         className="relative min-h-screen w-full flex flex-col items-center justify-center text-center p-4 md:p-8"
         style={{
-          backgroundImage: `url(${bannerImage})`,
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${bannerImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundBlend: 'overlay',
@@ -70,7 +70,7 @@ export default function ReligiousPortal() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-3xl md:text-5xl font-bold text-amber-500 mb-4 md:mb-6"
+            className="text-3xl md:text-5xl font-bold text-amber-600 mb-4 md:mb-6"
           >
             Welcome to Our Spiritual Journey
           </motion.h1>
@@ -78,7 +78,7 @@ export default function ReligiousPortal() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-lg md:text-xl text-[#9e8573] font-bold mb-6 md:mb-8 max-w-2xl mx-auto"
+            className="text-lg md:text-xl text-amber-200 font-bold mb-6 md:mb-8 max-w-2xl mx-auto"
           >
             Join our community of devotees and explore the path to spiritual
             enlightenment. Register to receive updates on events, rituals, and
