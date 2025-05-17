@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "start": "set NODE_ENV=PRODUCTION & npx nodemon app.js",
-    "dev": "npx nodemon app.js"
+    "dev": "npx nodemon app.js",
+    "build": "echo 'No build step required'"
   },
   "keywords": [],
   "author": "",
