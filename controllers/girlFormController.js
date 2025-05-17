@@ -1,10 +1,9 @@
-import GirlForm from '../models/girlFormModel.js'
-import { uploadOnCloudinary } from "../utils/cloudinary.js"; 
+import GirlForm from '../models/girlFormModel.js';
+import { uploadOnCloudinary } from '../utils/cloudinary.js';
 
 export const submitGirlForm = async (req, res) => {
   try {
     const formData = req.body;
-    
 
     // File upload handling (if files are included)
     const girlPhoto = req.files?.girlPhoto?.[0]?.buffer;
@@ -30,11 +29,11 @@ export const submitGirlForm = async (req, res) => {
     const newForm = await GirlForm.create(formData);
 
     res.status(201).json({
-      message: "Form submitted successfully",
+      message: 'Form submitted successfully',
       data: newForm,
     });
   } catch (error) {
-    console.error("Form submission error:", error);
-    res.status(500).json({ error: "Failed to submit form" });
+    console.error('Form submission error:', error);
+    res.status(500).json({ error: 'Failed to submit form' });
   }
 };

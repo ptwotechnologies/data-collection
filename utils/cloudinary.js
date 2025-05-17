@@ -1,9 +1,8 @@
-import { v2 as cloudinary } from "cloudinary";
-import dotenv from "dotenv";
-import streamifier from "streamifier";
+import { v2 as cloudinary } from 'cloudinary';
+import dotenv from 'dotenv';
+import streamifier from 'streamifier';
 
 dotenv.config();
-
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -14,16 +13,16 @@ cloudinary.config({
 export const uploadOnCloudinary = (fileBuffer) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { folder: "employees" },
+      { folder: 'employees' },
       (error, result) => {
         if (error) {
-          console.error("Cloudinary Upload Error:", error);
-          return reject(new Error("Image upload failed"));
+          console.error('Cloudinary Upload Error:', error);
+          return reject(new Error('Image upload failed'));
         }
-        resolve(result.secure_url); 
+        resolve(result.secure_url);
       }
     );
 
-    streamifier.createReadStream(fileBuffer).pipe(stream); 
+    streamifier.createReadStream(fileBuffer).pipe(stream);
   });
 };
