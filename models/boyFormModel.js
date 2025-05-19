@@ -16,41 +16,27 @@ const BoyFormSchema = new mongoose.Schema(
     state: { type: String, required: true },
     mobileNumber: { type: String, required: true },
 
-    // Religious Information
+    // Religious Information (optional)
     firstNameReceiptDate: { type: String },
     satnamReceiptDate: { type: String },
     dateOfNameReceipt: { type: String },
     abstractReceiptDate: { type: String },
 
     // Declaration Information
-    declarantName: { type: String, required: true },
     declarantSon: { type: String, required: true },
-    declarantResident: { type: String, required: true },
-    wantToMarry: { type: String, required: true },
-    wantToMarryState: { type: String, required: true },
-    acceptDeclaration: { type: Boolean, required: true, default: false },
-
-    // Marriage Details
-    childName: { type: String, required: true },
-    childFrom: { type: String },
-    childDistrict: { type: String },
+    childFrom: { type: String, required: true },
     ramainSiriNo: { type: String },
     location: { type: String, required: true },
     dateOfRamaini: { type: String, required: true },
+    generatedDeclaration: { type: String },
 
     // Important Questions
-    isAdult: { type: String, default: 'No', required: true },
-    isDowryFree: { type: String, default: 'No', required: true },
-    agreeWithRules: { type: String, default: 'No', required: true },
-    isAlreadyMarried: { type: String, default: 'No', required: true },
+    isAdult: { type: String, required: true },
+    isDowryFree: { type: String, required: true },
+    agreeWithRules: { type: String, required: true },
+    isAlreadyMarried: { type: String, required: true },
 
-    // Signatures
-    boySignatureName: { type: String, required: true },
-    boySignatureMobile: { type: String, required: true },
-    boySignatureRelation: { type: String, required: true },
-    boySignatureDate: { type: String, required: true },
-
-    // Photos and Signatures (files)
+    // File uploads
     boyPhoto: { type: String },
     girlPhoto: { type: String },
     boySignature: { type: String },
@@ -60,5 +46,6 @@ const BoyFormSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
 const BoyForm = mongoose.model('BoyForm', BoyFormSchema);
 export default BoyForm;

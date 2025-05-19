@@ -1,4 +1,4 @@
-// Complete girlFormRoute.js file
+// girlFormRoute.js
 import multer from 'multer';
 import express from 'express';
 import { submitGirlForm } from '../controllers/girlFormController.js';
@@ -8,7 +8,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 const router = express.Router();
 
-// Existing submission route
+// Submission route
 router.post(
   '/submit',
   upload.fields([
@@ -20,7 +20,7 @@ router.post(
   submitGirlForm
 );
 
-// New search route
+// Search by mobile number
 router.get('/search', async (req, res) => {
   const { mobileNumber } = req.query;
 
@@ -50,6 +50,24 @@ router.get('/search', async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
+    });
+  }
+});
+
+// New route: Get all girl form data
+router.get('/all', async (req, res) => {
+  try {
+    const allGirlForms = await GirlForm.find().sort({ createdAt: -1 }); // latest first
+    res.status(200).json({
+      success: true,
+      count: allGirlForms.length,
+      data: allGirlForms,
+    });
+  } catch (error) {
+    console.error('Fetch all error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve data',
     });
   }
 });
