@@ -8,6 +8,10 @@ input {
   outline: none;
   /* border: none; */
 }
+
+ul li {
+  list-style: none;
+}
 button {
   cursor: pointer;
 }
