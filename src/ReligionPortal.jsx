@@ -57,7 +57,7 @@ export default function ReligiousPortal() {
       <div className="hidden md:flex min-h-screen w-full">
         {/* Banner Image - Left Side (40% width) */}
         <div
-          className="w-2/5 bg-cover bg-center"
+          className="w-2/5 bg-contain bg-center"
           style={{
             backgroundImage: `url(${bannerImage})`,
             borderTopRightRadius: '3rem',

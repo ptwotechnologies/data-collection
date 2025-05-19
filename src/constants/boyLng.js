@@ -6,7 +6,7 @@ i18n.use(initReactI18next).init({
   resources: {
     en: {
       translation: {
-        title: 'Ramaini (Marriage) Registration Form - Boy',
+        title: 'Ramaini (Marriage) Registration Form ',
         subtitle: 'Jai Purnabrahma Kabir Saheb',
         personalInfo: 'Personal Information',
         boyName: "Boy's Name",

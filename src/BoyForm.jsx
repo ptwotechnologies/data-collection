@@ -98,7 +98,8 @@ I also declare that the above information given by me is true, complete and corr
 
   // Handle form submission - Direct form submit handler
   const handleFormSubmit = async (event) => {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault();
+    console.log('Form submission started');
 
     // Trigger validation
     const isValid = await trigger();
@@ -117,55 +118,103 @@ I also declare that the above information given by me is true, complete and corr
     setSubmitStatus(null);
 
     try {
-      // Get form data manually
-      const formData = new FormData(event.target);
+      // Create FormData object
+      const formData = new FormData();
 
-      // Append additional form fields that are managed by react-hook-form
-      const additionalData = getValues();
-      Object.keys(additionalData).forEach((key) => {
-        if (additionalData[key] !== null && additionalData[key] !== undefined) {
-          // Only append if not already in FormData
-          if (!formData.has(key)) {
-            formData.append(key, additionalData[key]);
-          }
+      // Get form values from react-hook-form
+      const formValues = getValues();
+      console.log('Form values from react-hook-form:', formValues);
+
+      // Add all form fields to FormData
+      Object.keys(formValues).forEach((key) => {
+        if (
+          formValues[key] !== null &&
+          formValues[key] !== undefined &&
+          formValues[key] !== ''
+        ) {
+          formData.append(key, formValues[key]);
         }
       });
 
-      // Append generated declaration
+      // Add the generated declaration
       formData.append('generatedDeclaration', generatedDeclaration);
 
-      // Append files if they exist
+      // Add file uploads
       if (girlPhoto.file) {
         formData.append('girlPhoto', girlPhoto.file);
+        console.log('Girl photo added:', girlPhoto.file.name);
       }
       if (boyPhoto.file) {
         formData.append('boyPhoto', boyPhoto.file);
+        console.log('Boy photo added:', boyPhoto.file.name);
       }
       if (boySignature.file) {
         formData.append('boySignature', boySignature.file);
+        console.log('Boy signature added:', boySignature.file.name);
       }
       if (familySignature.file) {
         formData.append('familySignature', familySignature.file);
+        console.log('Family signature added:', familySignature.file.name);
       }
 
-      // Submit to your API endpoint
+      // Log what's being sent (for debugging)
+      console.log('FormData contents:');
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+
+      // Submit to API
+      console.log('Submitting to API...');
       const response = await axios.post(
-        'http://localhost:8888/api/girl/submit',
+        'http://localhost:8888/api/boy/submit',
         formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
+          timeout: 30000, // 30 second timeout
         }
       );
 
+      console.log('API Response:', response);
+
       if (response.status === 200 || response.status === 201) {
         setSubmitStatus('success');
-        // Reset form or redirect as needed
+        console.log('Form submitted successfully');
+        // Optionally reset form or redirect
+        // reset(); // Uncomment if you want to reset the form
       }
     } catch (error) {
-      console.error('Submission error:', error);
-      setSubmitStatus('error');
+      console.error('Detailed submission error:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers,
+        config: error.config,
+      });
+
+      // More specific error handling
+      if (error.response) {
+        // Server responded with error status
+        console.error('Server Error Response:', error.response.data);
+        setSubmitStatus('error');
+
+        // Show more specific error message if available
+        if (error.response.data?.message) {
+          alert(`Server Error: ${error.response.data.message}`);
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        console.error('No response received:', error.request);
+        setSubmitStatus('error');
+        alert('No response from server. Please check your connection.');
+      } else {
+        // Error in request setup
+        console.error('Request setup error:', error.message);
+        setSubmitStatus('error');
+        alert(`Request Error: ${error.message}`);
+      }
     } finally {
       setIsSubmitting(false);
     }

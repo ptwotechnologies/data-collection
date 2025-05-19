@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Papa from 'papaparse';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axiosInstance from '../src/context/axiosInstance';
 import Pagination from './Pagination';
@@ -253,15 +253,15 @@ const AdminPanel = () => {
             <Users size={20} className="mr-3" />
             <span className="hidden lg:inline">Users</span>
           </button>
-
-          <button className="flex items-center px-4 py-3 text-amber-100 hover:bg-purple-900/30 hover:text-amber-200 transition-colors">
-            <FileSpreadsheet size={20} className="mr-3" />
-            <span className="hidden lg:inline">Reports</span>
-          </button>
-
+          <Link to="/admin/ramani-girls">
+            <button className="flex items-center px-4 py-3 text-amber-100 hover:bg-purple-900/30 hover:text-amber-200 transition-colors">
+              <FileSpreadsheet size={20} className="mr-3" />
+              <span className="hidden lg:inline">Ramani Girl</span>
+            </button>
+          </Link>
           <button className="flex items-center px-4 py-3 text-amber-100 hover:bg-purple-900/30 hover:text-amber-200 transition-colors">
             <Database size={20} className="mr-3" />
-            <span className="hidden lg:inline">Database</span>
+            <span className="hidden lg:inline">Ramani Boy</span>
           </button>
         </nav>
 
