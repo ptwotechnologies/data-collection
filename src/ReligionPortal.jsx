@@ -52,130 +52,260 @@ export default function ReligiousPortal() {
   };
 
   return (
-    <div className="relative min-h-screen w-full  bg-cover bg-center bg-no-repeat">
-      {/* Banner Section */}
-      <div
-        className="relative min-h-screen w-full flex flex-col items-center justify-center text-center p-4 md:p-8"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${bannerImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundBlend: 'overlay',
-        }}
-      >
-        <div className="absolute inset-0 bg-opacity-70"></div>
+    <div className="relative min-h-screen w-full">
+      {/* Desktop Layout (Side by side) */}
+      <div className="hidden md:flex min-h-screen w-full">
+        {/* Banner Image - Left Side (40% width) */}
+        <div
+          className="w-2/5 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${bannerImage})`,
+            borderTopRightRadius: '3rem',
+            borderBottomRightRadius: '3rem',
+          }}
+        />
 
-        <div className="relative z-10 w-full max-w-4xl mx-auto px-4">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-3xl md:text-5xl font-bold text-amber-600 mb-4 md:mb-6"
-          >
-            Welcome to Our Spiritual Journey
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-lg md:text-xl text-amber-200 font-bold mb-6 md:mb-8 max-w-2xl mx-auto"
-          >
-            Join our community of devotees and explore the path to spiritual
-            enlightenment. Register to receive updates on events, rituals, and
-            gatherings.
-          </motion.p>
-
-          {/* Responsive button layout - grid for mobile, flex for desktop */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-row md:justify-center gap-3 md:gap-4 w-full max-w-3xl mx-auto">
-            <motion.button
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleOpenRegister}
-              className="px-4 md:px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+        {/* Content - Right Side (60% width) */}
+        <div className="w-3/5 flex items-center justify-center p-8 bg-gray-900">
+          <div className="max-w-2xl">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-4xl md:text-5xl font-bold text-red-600 mb-6"
             >
-              Register Now
-            </motion.button>
-
-            <motion.button
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                navigate('/certificate');
-              }}
-              className="px-4 md:px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+              Welcome to Our Spiritual Journey
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-xl text-red-200 font-bold mb-8"
             >
-              Download Form
-            </motion.button>
+              Join our community of devotees and explore the path to spiritual
+              enlightenment. Register to receive updates on events, rituals, and
+              gatherings.
+            </motion.p>
 
-            {/* Get Married dropdown container */}
-            <div className="relative w-full sm:w-auto">
+            {/* Buttons */}
+            <div className="flex flex-wrap gap-4 w-full">
               <motion.button
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setShowMarriageOptions(!showMarriageOptions)}
-                onMouseEnter={() => setShowMarriageOptions(true)}
-                onMouseLeave={() => setShowMarriageOptions(false)}
-                className="w-full px-4 md:px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+                onClick={handleOpenRegister}
+                className="px-8 cursor-pointer py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg"
               >
-                Get Married
+                Register Now
               </motion.button>
 
-              {/* Dropdown options */}
-              <AnimatePresence>
-                {showMarriageOptions && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute left-0 right-0 mt-2 flex flex-col z-20"
-                    onMouseEnter={() => setShowMarriageOptions(true)}
-                    onMouseLeave={() => setShowMarriageOptions(false)}
-                  >
-                    <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={handleRegisterAsGirl}
-                      className="w-full py-2 bg-pink-400 hover:bg-pink-500 text-white font-medium rounded-t-md shadow-md"
-                    >
-                      Register as Female
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={handleRegisterAsBoy}
-                      className="w-full py-2 bg-purple-400 hover:bg-purple-500 text-white font-medium rounded-b-md shadow-md"
-                    >
-                      Register as Male
-                    </motion.button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+              <motion.button
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  navigate('/certificate');
+                }}
+                className="px-8 cursor-pointer py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg"
+              >
+                Download Form
+              </motion.button>
 
-            <motion.button
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                handleClick();
-                handleOpenLogin();
-              }}
-              className="px-4 md:px-8 cursor-pointer py-3 bg-amber-500 hover:bg-amber-600 text-[#2a1533] font-bold rounded-lg shadow-lg"
+              {/* Get Married dropdown container */}
+              <div className="relative">
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowMarriageOptions(!showMarriageOptions)}
+                  onMouseEnter={() => setShowMarriageOptions(true)}
+                  onMouseLeave={() => setShowMarriageOptions(false)}
+                  className="px-8 cursor-pointer py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg"
+                >
+                  Get Married
+                </motion.button>
+
+                {/* Dropdown options */}
+                <AnimatePresence>
+                  {showMarriageOptions && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute left-0 right-0 mt-2 flex flex-col z-20"
+                      onMouseEnter={() => setShowMarriageOptions(true)}
+                      onMouseLeave={() => setShowMarriageOptions(false)}
+                    >
+                      <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={handleRegisterAsGirl}
+                        className="w-full py-2 bg-red-400 hover:bg-red-500 text-white font-medium rounded-t-md shadow-md"
+                      >
+                        Register as Female
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={handleRegisterAsBoy}
+                        className="w-full py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-b-md shadow-md"
+                      >
+                        Register as Male
+                      </motion.button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <motion.button
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  handleClick();
+                  handleOpenLogin();
+                }}
+                className="px-8 cursor-pointer py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg"
+              >
+                {isAdminLoggedIn ? 'Go to Dashboard' : 'Admin Sign In'}
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Layout (Stack) */}
+      <div className="md:hidden min-h-screen w-full flex flex-col">
+        {/* Banner Image - Top (1/3 height) */}
+        <div
+          className="h-1/3 w-full bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${bannerImage})`,
+            minHeight: '33vh',
+            borderBottomLeftRadius: '3rem',
+            borderBottomRightRadius: '3rem',
+          }}
+        />
+
+        {/* Content - Bottom (2/3 height) */}
+        <div className="flex-1 flex items-center justify-center p-4 bg-gray-900">
+          <div className="w-full max-w-md">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-3xl font-bold text-red-600 mb-4 text-center"
             >
-              {isAdminLoggedIn ? 'Go to Dashboard' : 'Admin Sign In'}
-            </motion.button>
+              Welcome to Our Spiritual Journey
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-lg text-red-200 font-bold mb-6 text-center"
+            >
+              Join our community of devotees and explore the path to spiritual
+              enlightenment. Register to receive updates on events, rituals, and
+              gatherings.
+            </motion.p>
+
+            {/* Buttons */}
+            <div className="grid grid-cols-1 gap-3 w-full">
+              <motion.button
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleOpenRegister}
+                className="px-4 cursor-pointer py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg"
+              >
+                Register Now
+              </motion.button>
+
+              <motion.button
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  navigate('/certificate');
+                }}
+                className="px-4 cursor-pointer py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg"
+              >
+                Download Form
+              </motion.button>
+
+              {/* Get Married dropdown container */}
+              <div className="relative w-full">
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowMarriageOptions(!showMarriageOptions)}
+                  className="w-full px-4 cursor-pointer py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg"
+                >
+                  Get Married
+                </motion.button>
+
+                {/* Dropdown options */}
+                <AnimatePresence>
+                  {showMarriageOptions && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute left-0 right-0 mt-2 flex flex-col z-20"
+                    >
+                      <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={handleRegisterAsGirl}
+                        className="w-full py-2 bg-red-400 hover:bg-red-500 text-white font-medium rounded-t-md shadow-md"
+                      >
+                        Register as Female
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={handleRegisterAsBoy}
+                        className="w-full py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-b-md shadow-md"
+                      >
+                        Register as Male
+                      </motion.button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <motion.button
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  handleClick();
+                  handleOpenLogin();
+                }}
+                className="px-4 cursor-pointer py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg"
+              >
+                {isAdminLoggedIn ? 'Go to Dashboard' : 'Admin Sign In'}
+              </motion.button>
+            </div>
           </div>
         </div>
       </div>
