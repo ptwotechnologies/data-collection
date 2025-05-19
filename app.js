@@ -17,15 +17,25 @@ const port = process.env.PORT || 5000;
 
 const app = express();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Fixed CORS configuration
 app.use(
   cors({
-    origin: 'https://data-collection-virid-xi.vercel.app',
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:3000',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:5174',
+    ], // Allow multiple ports and removed trailing slash
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   })
 );
+
 app.use(morgan('dev'));
 connectDB();
 
@@ -34,7 +44,6 @@ app.get('/', (req, res) => {
 });
 
 // your routes here
-
 app.use('/api/form', formRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/girl', girlRoutes);
