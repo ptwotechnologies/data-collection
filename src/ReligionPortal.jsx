@@ -52,7 +52,7 @@ export default function ReligiousPortal() {
   };
 
   return (
-    <div className="relative min-h-screen w-full">
+    <div className="relative min-h-screen w-full bg-red-50">
       {/* Desktop Layout (Side by side) */}
       <div className="hidden md:flex min-h-screen w-full">
         {/* Banner Image - Left Side (40% width) */}
@@ -66,7 +66,7 @@ export default function ReligiousPortal() {
         />
 
         {/* Content - Right Side (60% width) */}
-        <div className="w-3/5 flex items-center justify-center p-8 bg-gray-900">
+        <div className="w-3/5 flex items-center justify-center p-8 bg-red-50">
           <div className="max-w-2xl">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -80,7 +80,7 @@ export default function ReligiousPortal() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-xl text-red-200 font-bold mb-8"
+              className="text-xl text-gray-700 font-bold mb-8"
             >
               Join our community of devotees and explore the path to spiritual
               enlightenment. Register to receive updates on events, rituals, and
@@ -196,7 +196,7 @@ export default function ReligiousPortal() {
         />
 
         {/* Content - Bottom (25% height) */}
-        <div className="flex-1 flex items-center justify-center p-4 bg-gray-900">
+        <div className="flex-1 flex items-center justify-center p-4 bg-red-50">
           <div className="w-full max-w-md">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -210,7 +210,7 @@ export default function ReligiousPortal() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-lg text-red-200 font-bold mb-6 text-center"
+              className="text-lg text-gray-700 font-bold mb-6 text-center"
             >
               Join our community of devotees and explore the path to spiritual
               enlightenment.

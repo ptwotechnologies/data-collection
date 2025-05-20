@@ -20,7 +20,7 @@ const boyFormSchema = z.object({
   mobileNumber: z
     .string()
     .min(10, { message: 'invalidMobile' })
-    .max(15, { message: 'invalidMobile' }),
+    .max(10, { message: 'invalidMobile' }),
 
   // Religious Information (all optional)
   firstNameReceiptDate: z.string().optional(),

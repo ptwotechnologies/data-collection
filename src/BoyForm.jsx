@@ -584,7 +584,7 @@ I also declare that the above information given by me is true, complete and corr
                     <button
                       type="button"
                       onClick={generateDeclaration}
-                      className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition duration-300"
+                      className="px-8 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition duration-300"
                     >
                       Generate Declaration
                     </button>
@@ -627,7 +627,7 @@ I also declare that the above information given by me is true, complete and corr
                       setIsDeclared(false);
                       setAcceptFinalDeclaration(false);
                     }}
-                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                    className="text-sm text-red-600 hover:text-red-800 underline"
                   >
                     Edit Declaration Details
                   </button>

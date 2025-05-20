@@ -89,13 +89,16 @@ function RegisterModal({ handleCloseModal }) {
     };
 
     try {
-      const res = await fetch('https://data-collection-40bw.onrender.com/api/form', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        'https://data-collection-40bw.onrender.com/api/form',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!res.ok) throw new Error('Failed to submit form');
 
@@ -328,7 +331,7 @@ function RegisterModal({ handleCloseModal }) {
                     htmlFor="taluk"
                     className="block text-amber-100 mb-1 sm:mb-2 font-medium"
                   >
-                    Taluk
+                    City
                   </label>
                   <input
                     type="text"
@@ -339,7 +342,7 @@ function RegisterModal({ handleCloseModal }) {
                     required
                     disabled={!formData.district}
                     className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    placeholder="Enter taluk name"
+                    placeholder="Enter city name"
                   />
                 </motion.div>
 

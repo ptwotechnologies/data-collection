@@ -91,7 +91,7 @@ const RamaniBoyList = () => {
     if (window.confirm('Are you sure you want to delete this record?')) {
       try {
         const response = await fetch(
-          `https://data-collection-mig2.onrender.com/api/boy/${boyId}`,
+          `https://data-collection-mig2.onrender.com//api/boy/${boyId}`,
           {
             method: 'DELETE',
           }
@@ -233,10 +233,6 @@ const RamaniBoyList = () => {
           {/* Search and Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="md:col-span-2 relative">
-              <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={16}
-              />
               <input
                 type="text"
                 placeholder="Search by name, father's name, mobile, or location..."
