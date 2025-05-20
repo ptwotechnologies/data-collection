@@ -1,24 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Search, Download, ChevronRight } from 'lucide-react';
-import GirlDetailsCard from './GirlDetailsCard';
+import BoyDetailsCard from './BoyDetailsCard';
 
-const RamaniGirlList = () => {
-  const [girls, setGirls] = useState([]);
+const RamaniBoyList = () => {
+  const [boys, setBoys] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredGirls, setFilteredGirls] = useState([]);
-  const [selectedGirl, setSelectedGirl] = useState(null);
+  const [filteredBoys, setFilteredBoys] = useState([]);
+  const [selectedBoy, setSelectedBoy] = useState(null);
 
   // Fetch data from API
   useEffect(() => {
-    const fetchGirls = async () => {
+    const fetchBoys = async () => {
       try {
         setLoading(true);
         setError(null);
         const response = await fetch(
-          'https://data-collection-mig2.onrender.com/api/girl/all'
+          'https://data-collection-mig2.onrender.com/api/boy/all'
         );
 
         if (!response.ok) {
@@ -26,98 +26,97 @@ const RamaniGirlList = () => {
         }
 
         const responseData = await response.json();
-        let girlsArray = [];
+        let boysArray = [];
 
         if (
           responseData &&
           responseData.success &&
           Array.isArray(responseData.data)
         ) {
-          girlsArray = responseData.data;
+          boysArray = responseData.data;
         } else if (Array.isArray(responseData)) {
-          girlsArray = responseData;
+          boysArray = responseData;
         }
 
-        setGirls(girlsArray);
-        setFilteredGirls(girlsArray);
+        setBoys(boysArray);
+        setFilteredBoys(boysArray);
       } catch (err) {
-        console.error('Error fetching girls data:', err);
+        console.error('Error fetching boys data:', err);
         setError(err.message);
-        setGirls([]);
-        setFilteredGirls([]);
+        setBoys([]);
+        setFilteredBoys([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchGirls();
+    fetchBoys();
   }, []);
 
   // Search functionality
   useEffect(() => {
     try {
       if (searchTerm.trim() === '') {
-        setFilteredGirls(girls);
+        setFilteredBoys(boys);
       } else {
-        const filtered = girls.filter((girl) => {
-          if (!girl) return false;
+        const filtered = boys.filter((boy) => {
+          if (!boy) return false;
 
           const searchLower = searchTerm.toLowerCase();
           return (
-            (girl.girlName &&
-              girl.girlName.toLowerCase().includes(searchLower)) ||
-            (girl.girlFatherName &&
-              girl.girlFatherName.toLowerCase().includes(searchLower)) ||
-            (girl.mobileNumber && girl.mobileNumber.includes(searchTerm)) ||
-            (girl.district &&
-              girl.district.toLowerCase().includes(searchLower)) ||
-            (girl.state && girl.state.toLowerCase().includes(searchLower))
+            (boy.boyName && boy.boyName.toLowerCase().includes(searchLower)) ||
+            (boy.boyFatherName &&
+              boy.boyFatherName.toLowerCase().includes(searchLower)) ||
+            (boy.mobileNumber && boy.mobileNumber.includes(searchTerm)) ||
+            (boy.district &&
+              boy.district.toLowerCase().includes(searchLower)) ||
+            (boy.state && boy.state.toLowerCase().includes(searchLower))
           );
         });
-        setFilteredGirls(filtered);
+        setFilteredBoys(filtered);
       }
     } catch (err) {
       console.error('Error in search filter:', err);
-      setFilteredGirls([]);
+      setFilteredBoys([]);
     }
-  }, [searchTerm, girls]);
+  }, [searchTerm, boys]);
 
   // Handle actions
-  const handleEdit = (girlId) => {
-    console.log('Edit girl with ID:', girlId);
+  const handleEdit = (boyId) => {
+    console.log('Edit boy with ID:', boyId);
     // Navigate to edit page or open edit modal
   };
 
-  const handleDelete = async (girlId) => {
+  const handleDelete = async (boyId) => {
     if (window.confirm('Are you sure you want to delete this record?')) {
       try {
         const response = await fetch(
-          `https://data-collection-mig2.onrender.com/api/girl/${girlId}`,
+          `https://data-collection-mig2.onrender.com/api/boy/${boyId}`,
           {
             method: 'DELETE',
           }
         );
 
         if (response.ok) {
-          const updatedGirls = girls.filter((girl) => girl._id !== girlId);
-          setGirls(updatedGirls);
-          setFilteredGirls(filteredGirls.filter((girl) => girl._id !== girlId));
-          if (selectedGirl && selectedGirl._id === girlId) {
-            setSelectedGirl(null);
+          const updatedBoys = boys.filter((boy) => boy._id !== boyId);
+          setBoys(updatedBoys);
+          setFilteredBoys(filteredBoys.filter((boy) => boy._id !== boyId));
+          if (selectedBoy && selectedBoy._id === boyId) {
+            setSelectedBoy(null);
           }
           alert('Record deleted successfully');
         } else {
           throw new Error('Failed to delete record');
         }
       } catch (err) {
-        console.error('Error deleting girl:', err);
+        console.error('Error deleting boy:', err);
         alert('Error deleting record: ' + err.message);
       }
     }
   };
 
-  const handleViewDetails = (girl) => {
-    setSelectedGirl(girl);
+  const handleViewDetails = (boy) => {
+    setSelectedBoy(boy);
   };
 
   const handleExportCSV = () => {
@@ -132,15 +131,15 @@ const RamaniGirlList = () => {
           'State',
           'Already Married',
         ].join(','),
-        ...filteredGirls.map((girl) =>
+        ...filteredBoys.map((boy) =>
           [
-            (girl.girlName || '').replace(/,/g, ';'),
-            (girl.girlFatherName || '').replace(/,/g, ';'),
-            girl.girlAge || '',
-            girl.mobileNumber || '',
-            (girl.district || '').replace(/,/g, ';'),
-            (girl.state || '').replace(/,/g, ';'),
-            girl.isAlreadyMarried || '',
+            (boy.boyName || '').replace(/,/g, ';'),
+            (boy.boyFatherName || '').replace(/,/g, ';'),
+            boy.boyAge || '',
+            boy.mobileNumber || '',
+            (boy.district || '').replace(/,/g, ';'),
+            (boy.state || '').replace(/,/g, ';'),
+            boy.isAlreadyMarried || '',
           ].join(',')
         ),
       ].join('\n');
@@ -149,7 +148,7 @@ const RamaniGirlList = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `ramani_girls_${new Date().toISOString().split('T')[0]}.csv`;
+      a.download = `ramani_boys_${new Date().toISOString().split('T')[0]}.csv`;
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (err) {
@@ -159,7 +158,7 @@ const RamaniGirlList = () => {
   };
 
   const closeDetails = () => {
-    setSelectedGirl(null);
+    setSelectedBoy(null);
   };
 
   // Error handling
@@ -222,7 +221,7 @@ const RamaniGirlList = () => {
             <div>
               <button
                 onClick={handleExportCSV}
-                disabled={filteredGirls.length === 0}
+                disabled={filteredBoys.length === 0}
                 className="flex items-center gap-2 px-4 py-2 bg-[#6d47a8] text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Download size={16} />
@@ -249,16 +248,15 @@ const RamaniGirlList = () => {
             <div className="flex gap-3">
               <div className="flex-1 bg-[#1e0d24] rounded-lg p-3 text-center border border-gray-700">
                 <p className="text-lg font-semibold text-white">
-                  {filteredGirls.length}
+                  {filteredBoys.length}
                 </p>
                 <p className="text-gray-400 text-sm">Total</p>
               </div>
               <div className="flex-1 bg-[#1e0d24] rounded-lg p-3 text-center border border-gray-700">
                 <p className="text-lg font-semibold text-green-400">
                   {
-                    filteredGirls.filter(
-                      (girl) => girl?.isAlreadyMarried === 'No'
-                    ).length
+                    filteredBoys.filter((boy) => boy?.isAlreadyMarried === 'No')
+                      .length
                   }
                 </p>
                 <p className="text-gray-400 text-sm">Not Married</p>
@@ -267,11 +265,11 @@ const RamaniGirlList = () => {
           </div>
         </div>
 
-        {selectedGirl ? (
+        {selectedBoy ? (
           <div className="bg-[#1e0d24] border border-gray-700 rounded-lg overflow-hidden">
             <div className="p-4 border-b border-gray-700 flex justify-between items-center">
               <h2 className="text-xl font-semibold text-white">
-                {selectedGirl.girlName}'s Details
+                {selectedBoy.boyName}'s Details
               </h2>
               <button
                 onClick={closeDetails}
@@ -281,17 +279,17 @@ const RamaniGirlList = () => {
               </button>
             </div>
             <div className="p-6">
-              <GirlDetailsCard
-                girlData={selectedGirl}
+              <BoyDetailsCard
+                boyData={selectedBoy}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
               />
             </div>
           </div>
         ) : (
-          // Girls List
+          // Boys List
           <div className="bg-[#1e0d24] border border-gray-700 rounded-lg overflow-hidden">
-            {filteredGirls.length === 0 ? (
+            {filteredBoys.length === 0 ? (
               <div className="text-center py-12">
                 <h3 className="text-lg font-semibold text-gray-300 mb-2">
                   {searchTerm ? 'No results found' : 'No data available'}
@@ -316,31 +314,31 @@ const RamaniGirlList = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredGirls.map((girl) => {
-                      if (!girl || !girl._id) return null;
+                    {filteredBoys.map((boy) => {
+                      if (!boy || !boy._id) return null;
 
                       return (
                         <tr
-                          key={girl._id}
+                          key={boy._id}
                           className="border-b border-gray-700 hover:bg-[#2a1442]"
-                          onClick={() => handleViewDetails(girl)}
+                          onClick={() => handleViewDetails(boy)}
                         >
-                          <td className="py-3 px-4">{girl.girlName}</td>
-                          <td className="py-3 px-4">{girl.girlFatherName}</td>
-                          <td className="py-3 px-4">{girl.mobileNumber}</td>
+                          <td className="py-3 px-4">{boy.boyName}</td>
+                          <td className="py-3 px-4">{boy.boyFatherName}</td>
+                          <td className="py-3 px-4">{boy.mobileNumber}</td>
                           <td className="py-3 px-4">
-                            {girl.district}
-                            {girl.state && `, ${girl.state}`}
+                            {boy.district}
+                            {boy.state && `, ${boy.state}`}
                           </td>
                           <td className="py-3 px-4">
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                girl.isAlreadyMarried === 'No'
+                                boy.isAlreadyMarried === 'No'
                                   ? 'bg-green-500/20 text-green-300'
                                   : 'bg-red-500/20 text-red-300'
                               }`}
                             >
-                              {girl.isAlreadyMarried || 'N/A'}
+                              {boy.isAlreadyMarried || 'N/A'}
                             </span>
                           </td>
                           <td className="py-3 px-4 text-center">
@@ -348,7 +346,7 @@ const RamaniGirlList = () => {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleEdit(girl._id);
+                                  handleEdit(boy._id);
                                 }}
                                 className="p-1 text-blue-400 hover:text-blue-300"
                                 title="Edit"
@@ -358,7 +356,7 @@ const RamaniGirlList = () => {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleDelete(girl._id);
+                                  handleDelete(boy._id);
                                 }}
                                 className="p-1 text-red-400 hover:text-red-300"
                                 title="Delete"
@@ -368,7 +366,7 @@ const RamaniGirlList = () => {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleViewDetails(girl);
+                                  handleViewDetails(boy);
                                 }}
                                 className="p-1 text-purple-400 hover:text-purple-300"
                               >
@@ -390,4 +388,4 @@ const RamaniGirlList = () => {
   );
 };
 
-export default RamaniGirlList;
+export default RamaniBoyList;

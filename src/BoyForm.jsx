@@ -166,7 +166,7 @@ I also declare that the above information given by me is true, complete and corr
       // Submit to API
       console.log('Submitting to API...');
       const response = await axios.post(
-        'http://localhost:8888/api/boy/submit',
+        'https://data-collection-mig2.onrender.com/api/boy/submit',
         formData,
         {
           headers: {

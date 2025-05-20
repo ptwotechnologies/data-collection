@@ -1,6 +1,6 @@
 import React from 'react';
 
-const GirlDetailsCard = ({ girlData, onEdit, onDelete }) => {
+const BoyDetailsCard = ({ boyData, onEdit, onDelete }) => {
   const formatDate = (dateString) => {
     if (!dateString) return 'Not provided';
     const date = new Date(dateString);
@@ -32,9 +32,9 @@ const GirlDetailsCard = ({ girlData, onEdit, onDelete }) => {
       <div className="flex justify-between items-start mb-6 pb-4 border-b border-gray-700">
         <div className="flex gap-4">
           <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-purple-500 bg-[#1a092c]">
-            {girlData.girlPhoto ? (
+            {boyData.boyPhoto ? (
               <img
-                src={girlData.girlPhoto}
+                src={boyData.boyPhoto}
                 alt="Profile"
                 className="w-full h-full object-cover"
                 onError={(e) => {
@@ -49,26 +49,26 @@ const GirlDetailsCard = ({ girlData, onEdit, onDelete }) => {
           </div>
           <div>
             <h3 className="text-xl font-semibold text-white mb-1">
-              {girlData.girlName}
+              {boyData.boyName}
             </h3>
             <p className="text-gray-300 text-sm mb-1">
-              Age: {formatAge(girlData.girlDOB)} years
+              Age: {formatAge(boyData.boyDOB)} years
             </p>
             <p className="text-gray-300 text-sm">
-              Mobile: {girlData.mobileNumber}
+              Mobile: {boyData.mobileNumber}
             </p>
           </div>
         </div>
         <div className="flex gap-2">
           <button
             className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm"
-            onClick={() => onEdit && onEdit(girlData._id)}
+            onClick={() => onEdit && onEdit(boyData._id)}
           >
             Edit
           </button>
           <button
             className="px-3 py-1 bg-red-600 text-white rounded-md text-sm"
-            onClick={() => onDelete && onDelete(girlData._id)}
+            onClick={() => onDelete && onDelete(boyData._id)}
           >
             Delete
           </button>
@@ -81,69 +81,81 @@ const GirlDetailsCard = ({ girlData, onEdit, onDelete }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Personal Information */}
           <Section title="Personal Information">
-            <InfoItem label="Father's Name" value={girlData.girlFatherName} />
-            <InfoItem label="Mother's Name" value={girlData.girlMotherName} />
+            <InfoItem label="Father's Name" value={boyData.boyFatherName} />
+            <InfoItem label="Mother's Name" value={boyData.boyMotherName} />
             <InfoItem
               label="Date of Birth"
-              value={formatDate(girlData.girlDOB)}
+              value={formatDate(boyData.boyDOB)}
             />
+            <InfoItem label="Education" value={boyData.boyEducation} />
+            <InfoItem label="Occupation" value={boyData.boyOccupation} />
           </Section>
 
           {/* Address Information */}
           <Section title="Address Information">
-            <InfoItem label="Full Address" value={girlData.fullAddress} />
-            <InfoItem label="Tehsil" value={girlData.tehsil} />
-            <InfoItem label="District" value={girlData.district} />
-            <InfoItem label="State" value={girlData.state} />
+            <InfoItem label="Full Address" value={boyData.fullAddress} />
+            <InfoItem label="Tehsil" value={boyData.tehsil} />
+            <InfoItem label="District" value={boyData.district} />
+            <InfoItem label="State" value={boyData.state} />
           </Section>
 
           {/* Marriage Information */}
           <Section title="Marriage Information">
-            <InfoItem label="Wants to Marry" value={girlData.wantToMarry} />
-            <InfoItem label="Groom's State" value={girlData.wantToMarryState} />
-            <InfoItem label="Child Name" value={girlData.childName} />
-            <InfoItem
-              label="Child From"
-              value={`${girlData.childFrom || ''} ${
-                girlData.childDistrict || ''
-              }`}
-            />
+            <InfoItem label="Wants to Marry" value={boyData.wantToMarry} />
+            <InfoItem label="Bride's State" value={boyData.wantToMarryState} />
             <InfoItem
               label="Already Married"
-              value={girlData.isAlreadyMarried || 'N/A'}
-              highlight={girlData.isAlreadyMarried === 'No' ? 'green' : 'red'}
+              value={boyData.isAlreadyMarried || 'N/A'}
+              highlight={boyData.isAlreadyMarried === 'No' ? 'green' : 'red'}
             />
           </Section>
 
           {/* Ramaini Information */}
           <Section title="Ramaini Information">
-            <InfoItem label="Serial No" value={girlData.ramainSiriNo} />
-            <InfoItem label="Location" value={girlData.location} />
+            <InfoItem label="Serial No" value={boyData.ramainSiriNo} />
+            <InfoItem label="Location" value={boyData.location} />
             <InfoItem
               label="Date of Ramaini"
-              value={formatDate(girlData.dateOfRamaini)}
+              value={formatDate(boyData.dateOfRamaini)}
             />
           </Section>
         </div>
+
+        {/* Income Details */}
+        <Section title="Income Information">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InfoItem
+              label="Monthly Income"
+              value={
+                boyData.monthlyIncome ? `₹${boyData.monthlyIncome}` : 'N/A'
+              }
+            />
+            <InfoItem
+              label="Family Income"
+              value={boyData.familyIncome ? `₹${boyData.familyIncome}` : 'N/A'}
+            />
+            <InfoItem label="Income Source" value={boyData.incomeSource} />
+          </div>
+        </Section>
 
         {/* Receipt Information */}
         <Section title="Receipt Information">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InfoItem
               label="First Name Receipt"
-              value={formatDate(girlData.firstNameReceiptDate)}
+              value={formatDate(boyData.firstNameReceiptDate)}
             />
             <InfoItem
               label="Satnam Receipt"
-              value={formatDate(girlData.satnamReceiptDate)}
+              value={formatDate(boyData.satnamReceiptDate)}
             />
             <InfoItem
               label="Name Receipt"
-              value={formatDate(girlData.dateOfNameReceipt)}
+              value={formatDate(boyData.dateOfNameReceipt)}
             />
             <InfoItem
               label="Abstract Receipt"
-              value={formatDate(girlData.abstractReceiptDate)}
+              value={formatDate(boyData.abstractReceiptDate)}
             />
           </div>
         </Section>
@@ -151,40 +163,40 @@ const GirlDetailsCard = ({ girlData, onEdit, onDelete }) => {
         {/* Declarant Information */}
         <Section title="Declarant Information">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <InfoItem label="Name" value={girlData.declarantName} />
-            <InfoItem label="Son of" value={girlData.declarantSon} />
-            <InfoItem label="Resident" value={girlData.declarantResident} />
+            <InfoItem label="Name" value={boyData.declarantName} />
+            <InfoItem label="Son of" value={boyData.declarantSon} />
+            <InfoItem label="Resident" value={boyData.declarantResident} />
             <InfoItem
               label="Accept Declaration"
-              value={girlData.acceptDeclaration ? 'Yes' : 'No'}
-              highlight={girlData.acceptDeclaration ? 'green' : 'red'}
+              value={boyData.acceptDeclaration ? 'Yes' : 'No'}
+              highlight={boyData.acceptDeclaration ? 'green' : 'red'}
             />
           </div>
         </Section>
 
         {/* Documents */}
-        {(girlData.girlPhoto ||
-          girlData.boyPhoto ||
-          girlData.girlSignature ||
-          girlData.familySignature) && (
+        {(boyData.boyPhoto ||
+          boyData.girlPhoto ||
+          boyData.boySignature ||
+          boyData.familySignature) && (
           <Section title="Documents">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-              {girlData.girlPhoto && (
-                <DocumentLink label="Girl Photo" url={girlData.girlPhoto} />
+              {boyData.boyPhoto && (
+                <DocumentLink label="Boy Photo" url={boyData.boyPhoto} />
               )}
-              {girlData.boyPhoto && (
-                <DocumentLink label="Boy Photo" url={girlData.boyPhoto} />
+              {boyData.girlPhoto && (
+                <DocumentLink label="Girl Photo" url={boyData.girlPhoto} />
               )}
-              {girlData.girlSignature && (
+              {boyData.boySignature && (
                 <DocumentLink
-                  label="Girl Signature"
-                  url={girlData.girlSignature}
+                  label="Boy Signature"
+                  url={boyData.boySignature}
                 />
               )}
-              {girlData.familySignature && (
+              {boyData.familySignature && (
                 <DocumentLink
                   label="Family Signature"
-                  url={girlData.familySignature}
+                  url={boyData.familySignature}
                 />
               )}
             </div>
@@ -194,8 +206,8 @@ const GirlDetailsCard = ({ girlData, onEdit, onDelete }) => {
         {/* Record Info */}
         <div className="text-sm text-gray-400 mt-4 pt-4 border-t border-gray-700">
           <div className="flex justify-between">
-            <span>Created: {formatDate(girlData.createdAt)}</span>
-            <span>Updated: {formatDate(girlData.updatedAt)}</span>
+            <span>Created: {formatDate(boyData.createdAt)}</span>
+            <span>Updated: {formatDate(boyData.updatedAt)}</span>
           </div>
         </div>
       </div>
@@ -241,4 +253,4 @@ const DocumentLink = ({ label, url }) => (
   </a>
 );
 
-export default GirlDetailsCard;
+export default BoyDetailsCard;

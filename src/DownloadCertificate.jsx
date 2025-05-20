@@ -35,7 +35,9 @@ export default function DownloadCertificate() {
 
       // Fetch boy data
       const boyResponse = await axios
-        .get(`http://localhost:8888/api/boy/search?mobileNumber=${boyPhone}`)
+        .get(
+          `https://data-collection-mig2.onrender.com/api/boy/search?mobileNumber=${boyPhone}`
+        )
         .catch((err) => {
           throw new Error(
             `Boy data error: ${err.response?.data?.message || err.message}`
@@ -49,7 +51,9 @@ export default function DownloadCertificate() {
 
       // Fetch girl data
       const girlResponse = await axios
-        .get(`http://localhost:8888/api/girl/search?mobileNumber=${girlPhone}`)
+        .get(
+          `https://data-collection-mig2.onrender.com/api/girl/search?mobileNumber=${girlPhone}`
+        )
         .catch((err) => {
           throw new Error(
             `Girl data error: ${err.response?.data?.message || err.message}`

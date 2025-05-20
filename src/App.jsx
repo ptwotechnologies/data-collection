@@ -7,6 +7,7 @@ import GirlForm from './GirlForm';
 import BoyForm from './BoyForm';
 import DownloadCertificate from './DownloadCertificate';
 import RamaniGirlList from './RamaniGirlList';
+import RamaniBoyList from './RamaniBoyList';
 
 function App() {
   return (
@@ -25,6 +26,14 @@ function App() {
         element={
           <ProtectedRoute>
             <RamaniGirlList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/ramani-boys"
+        element={
+          <ProtectedRoute>
+            <RamaniBoyList />
           </ProtectedRoute>
         }
       />

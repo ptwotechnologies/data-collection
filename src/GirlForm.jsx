@@ -150,7 +150,7 @@ I also declare that the above information given by me is true, complete and corr
 
       // Submit to your API endpoint
       const response = await axios.post(
-        'http://localhost:8888/api/girl/submit',
+        'https://data-collection-mig2.onrender.com/api/girl/submit',
         formData,
         {
           headers: {

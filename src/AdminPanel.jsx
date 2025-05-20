@@ -58,7 +58,6 @@ const AdminPanel = () => {
     const fetchUsers = async () => {
       try {
         const response = await axiosInstance.get('/form');
-        console.log('Data', response.data);
         setUsers(response.data);
         setFilteredUsers(response.data);
       } catch (error) {
@@ -259,10 +258,13 @@ const AdminPanel = () => {
               <span className="hidden lg:inline">Ramani Girl</span>
             </button>
           </Link>
-          <button className="flex items-center px-4 py-3 text-amber-100 hover:bg-purple-900/30 hover:text-amber-200 transition-colors">
-            <Database size={20} className="mr-3" />
-            <span className="hidden lg:inline">Ramani Boy</span>
-          </button>
+
+          <Link to="/admin/ramani-boys">
+            <button className="flex items-center px-4 py-3 text-amber-100 hover:bg-purple-900/30 hover:text-amber-200 transition-colors">
+              <Database size={20} className="mr-3" />
+              <span className="hidden lg:inline">Ramani Boy</span>
+            </button>
+          </Link>
         </nav>
 
         <div className="p-4 border-t border-purple-800/30">
