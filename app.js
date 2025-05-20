@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Fixed CORS configuration
 app.use(
   cors({
-    origin: ['https://data-collection-virid-xi.vercel.app'],
+    origin: 'https://data-collection-virid-xi.vercel.app',
     allowedHeaders: ['Content-Type', 'Authorization'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true, // Added this line to enable credentials
