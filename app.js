@@ -23,14 +23,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Fixed CORS configuration
 app.use(
   cors({
-    origin: [
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:3000',
-      'http://127.0.0.1:5173',
-      'http://127.0.0.1:5174',
-    ], // Allow multiple ports and removed trailing slash
-    credentials: true,
+    origin: ['https://data-collection-virid-xi.vercel.app'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   })

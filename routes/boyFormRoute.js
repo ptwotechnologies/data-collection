@@ -56,4 +56,21 @@ router.get('/search', async (req, res) => {
   }
 });
 
+router.get('/all', async (req, res) => {
+  try {
+    const allBoysForms = await BoyForm.find().sort({ createdAt: -1 }); // latest first
+    res.status(200).json({
+      success: true,
+      count: allBoysForms.length,
+      data: allBoysForms,
+    });
+  } catch (error) {
+    console.error('Fetch all error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve data',
+    });
+  }
+});
+
 export default router;
