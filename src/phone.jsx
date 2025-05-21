@@ -9,6 +9,7 @@ import {
   Image,
   StyleSheet,
 } from '@react-pdf/renderer';
+import axiosInstance from './context/axiosInstance';
 
 // Styles for PDF document
 const styles = StyleSheet.create({
@@ -526,41 +527,14 @@ export default function RamainiCertificateGenerator() {
   const [error, setError] = useState('');
   const [bothFound, setBothFound] = useState(false);
 
-  // Function to fetch boy data by phone number
-  const fetchBoyData = async () => {
-    if (!boyPhone) return;
-
-    try {
-      setLoading(true);
-      const response = await axios.get(
-        `https://data-collection-mig2.onrender.com/api/boy/search?phone=${boyPhone}`
-      );
-      if (response.data.success) {
-        setBoyData(response.data.data);
-        setError('');
-      } else {
-        setBoyData(null);
-        setError('Boy data not found');
-      }
-    } catch (err) {
-      setError(
-        'Error fetching boy data: ' +
-          (err.response?.data?.message || err.message)
-      );
-      setBoyData(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Function to fetch girl data by phone number
   const fetchGirlData = async () => {
     if (!girlPhone) return;
 
     try {
       setLoading(true);
-      const response = await axios.get(
-        `https://data-collection-mig2.onrender.com/api/girl/search?phone=${girlPhone}`
+      const response = await axiosInstance.get(
+        `/girl/search?phone=${girlPhone}`
       );
       if (response.data.success) {
         setGirlData(response.data.data);
@@ -575,6 +549,31 @@ export default function RamainiCertificateGenerator() {
           (err.response?.data?.message || err.message)
       );
       setGirlData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to fetch boy data by phone number
+  const fetchBoyData = async () => {
+    if (!boyPhone) return;
+
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get(`/boy/search?phone=${boyPhone}`);
+      if (response.data.success) {
+        setBoyData(response.data.data);
+        setError('');
+      } else {
+        setBoyData(null);
+        setError('Boy data not found');
+      }
+    } catch (err) {
+      setError(
+        'Error fetching boy data: ' +
+          (err.response?.data?.message || err.message)
+      );
+      setBoyData(null);
     } finally {
       setLoading(false);
     }

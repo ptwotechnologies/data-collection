@@ -21,3 +21,11 @@ button:focus,
 input[type='date']:focus {
   outline: none;
 }
+input[type='date']::placeholder {
+  text-transform: uppercase;
+}
+
+/* For the actual placeholder text shown in the input */
+input[type='date']::-webkit-datetime-edit {
+  text-transform: uppercase;
+}

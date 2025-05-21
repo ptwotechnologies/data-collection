@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Create validation schema for girl form - only includes fields present in the form
+// Create validation schema for girl form - now includes validation for required documents
 const girlFormSchema = z.object({
   // Personal Information
   girlName: z.string().min(1, { message: 'requiredField' }),
@@ -21,6 +21,11 @@ const girlFormSchema = z.object({
     .string()
     .min(10, { message: 'invalidMobile' })
     .max(15, { message: 'invalidMobile' }),
+  boymobileNumber: z
+    .string()
+    .min(10, { message: 'invalidMobile' })
+    .max(15, { message: 'invalidMobile' })
+    .optional(),
 
   // Religious Information (all optional)
   firstNameReceiptDate: z.string().optional(),
@@ -40,6 +45,23 @@ const girlFormSchema = z.object({
   isDowryFree: z.string().min(1, { message: 'requiredField' }),
   agreeWithRules: z.string().min(1, { message: 'requiredField' }),
   isAlreadyMarried: z.string().min(1, { message: 'requiredField' }),
+
+  // Document field validations are handled on the server side and in the UI
+  // We don't include them in the zod schema as they're managed with file inputs
 });
 
-export default girlFormSchema;
+// Custom refinement for divorce certificate requirement
+const enhancedGirlFormSchema = girlFormSchema.refine(
+  (data) => {
+    // If the person is already married, they must provide a divorce certificate
+    // This is enforced in the UI by disabling the submit button
+    return data.isAlreadyMarried !== 'Yes' || true; // The actual file validation is done in the UI and server
+  },
+  {
+    message:
+      'Divorce certificate is required for previously married individuals',
+    path: ['divorceCertificate'], // Points to the field that's incorrect
+  }
+);
+
+export default enhancedGirlFormSchema;

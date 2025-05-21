@@ -1,15 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Search, Download, ChevronRight } from 'lucide-react';
-import BoyDetailsCard from './BoyDetailsCard';
+import { useNavigate } from 'react-router-dom';
+import { Search, Download, Edit, Trash2, Grid, List } from 'lucide-react';
+import { motion } from 'framer-motion';
+import Papa from 'papaparse';
+import { toast } from 'react-toastify';
+import axiosInstance from './context/axiosInstance';
+import AdminLayout from './AdminPanel';
 
 const RamaniBoyList = () => {
+  const navigate = useNavigate();
   const [boys, setBoys] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredBoys, setFilteredBoys] = useState([]);
   const [selectedBoy, setSelectedBoy] = useState(null);
+  const [showBoyDetails, setShowBoyDetails] = useState(false);
+  const [viewMode, setViewMode] = useState('grid');
+  const [notification, setNotification] = useState({
+    show: false,
+    message: '',
+    type: '',
+  });
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentBoys = filteredBoys?.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = filteredBoys?.length
+    ? Math.ceil(filteredBoys.length / itemsPerPage)
+    : 0;
 
   // Fetch data from API
   useEffect(() => {
@@ -17,32 +39,22 @@ const RamaniBoyList = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(
-          'https://data-collection-mig2.onrender.com/api/boy/all'
-        );
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const response = await axiosInstance.get('/boy/all');
 
-        const responseData = await response.json();
-        let boysArray = [];
-
-        if (
-          responseData &&
-          responseData.success &&
-          Array.isArray(responseData.data)
-        ) {
-          boysArray = responseData.data;
-        } else if (Array.isArray(responseData)) {
-          boysArray = responseData;
-        }
+        // Handle different response formats
+        const boysArray = Array.isArray(response.data?.data)
+          ? response.data.data
+          : Array.isArray(response.data)
+          ? response.data
+          : [];
 
         setBoys(boysArray);
         setFilteredBoys(boysArray);
       } catch (err) {
-        console.error('Error fetching boys data:', err);
-        setError(err.message);
+        console.error('Fetch error:', err);
+        setError(err.response?.data?.message || err.message);
+        toast.error('Failed to load data');
         setBoys([]);
         setFilteredBoys([]);
       } finally {
@@ -81,306 +93,809 @@ const RamaniBoyList = () => {
     }
   }, [searchTerm, boys]);
 
-  // Handle actions
-  const handleEdit = (boyId) => {
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/');
+  };
+
+  // Show notification
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => {
+      setNotification({ show: false, message: '', type: '' });
+    }, 3000);
+  };
+
+  // Handle boy selection
+  const handleBoySelect = (boy) => {
+    setSelectedBoy(boy);
+    setShowBoyDetails(true);
+  };
+
+  // Handle boy deletion
+  const handleDeleteBoy = async (boyId) => {
+    if (!window.confirm('Are you sure you want to delete this record?')) return;
+
+    try {
+      await axiosInstance.delete(`/boy/${boyId}`);
+
+      // Update state optimistically
+      setBoys((prev) => prev.filter((boy) => boy._id !== boyId));
+      setFilteredBoys((prev) => prev.filter((boy) => boy._id !== boyId));
+
+      // Clear selection if needed
+      if (selectedBoy && selectedBoy._id === boyId) {
+        setSelectedBoy(null);
+        setShowBoyDetails(false);
+      }
+
+      showNotification('Record deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete record');
+      console.error('Delete Error:', error.response?.data || error.message);
+    }
+  };
+
+  // Handle boy edit
+  const handleEditBoy = (boyId) => {
     console.log('Edit boy with ID:', boyId);
     // Navigate to edit page or open edit modal
   };
 
-  const handleDelete = async (boyId) => {
-    if (window.confirm('Are you sure you want to delete this record?')) {
+  // Export to CSV
+  const exportToCSV = () => {
+    setLoading(true);
+
+    setTimeout(() => {
       try {
-        const response = await fetch(
-          `https://data-collection-mig2.onrender.com//api/boy/${boyId}`,
-          {
-            method: 'DELETE',
-          }
+        const csv = Papa.unparse(
+          filteredBoys.map((boy) => ({
+            Name: boy.boyName || '',
+            "Father's Name": boy.boyFatherName || '',
+            "Mother's Name": boy.boyMotherName || '',
+            Mobile: boy.mobileNumber || '',
+            District: boy.district || '',
+            State: boy.state || '',
+            'Already Married': boy.isAlreadyMarried || '',
+            DOB: boy.boyDOB || '',
+          }))
         );
 
-        if (response.ok) {
-          const updatedBoys = boys.filter((boy) => boy._id !== boyId);
-          setBoys(updatedBoys);
-          setFilteredBoys(filteredBoys.filter((boy) => boy._id !== boyId));
-          if (selectedBoy && selectedBoy._id === boyId) {
-            setSelectedBoy(null);
-          }
-          alert('Record deleted successfully');
-        } else {
-          throw new Error('Failed to delete record');
-        }
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+
+        link.setAttribute('href', url);
+        link.setAttribute(
+          'download',
+          `ramani_boys_${new Date().toISOString().split('T')[0]}.csv`
+        );
+        link.style.visibility = 'hidden';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        setLoading(false);
+        showNotification('CSV exported successfully');
       } catch (err) {
-        console.error('Error deleting boy:', err);
-        alert('Error deleting record: ' + err.message);
+        console.error('Error exporting CSV:', err);
+        toast.error('Failed to export CSV');
+        setLoading(false);
       }
+    }, 1000);
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const options = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    };
+    return new Date(dateString).toLocaleDateString('en-US', options);
+  };
+
+  // Close details panel
+  const closeDetailsPanel = () => {
+    setShowBoyDetails(false);
+  };
+
+  // Calculate age from DOB
+  const calculateAge = (dob) => {
+    if (!dob) return 'N/A';
+    const birthDate = new Date(dob);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      return age - 1;
     }
+    return age;
   };
-
-  const handleViewDetails = (boy) => {
-    setSelectedBoy(boy);
-  };
-
-  const handleExportCSV = () => {
-    try {
-      const csvContent = [
-        [
-          'Name',
-          'Father Name',
-          'Age',
-          'Mobile',
-          'District',
-          'State',
-          'Already Married',
-        ].join(','),
-        ...filteredBoys.map((boy) =>
-          [
-            (boy.boyName || '').replace(/,/g, ';'),
-            (boy.boyFatherName || '').replace(/,/g, ';'),
-            boy.boyAge || '',
-            boy.mobileNumber || '',
-            (boy.district || '').replace(/,/g, ';'),
-            (boy.state || '').replace(/,/g, ';'),
-            boy.isAlreadyMarried || '',
-          ].join(',')
-        ),
-      ].join('\n');
-
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `ramani_boys_${new Date().toISOString().split('T')[0]}.csv`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error('Error exporting CSV:', err);
-      alert('Error exporting CSV: ' + err.message);
-    }
-  };
-
-  const closeDetails = () => {
-    setSelectedBoy(null);
-  };
-
-  // Error handling
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#1a092c] p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-6 text-center">
-            <h2 className="text-xl font-bold text-red-400 mb-4">
-              Error Loading Data
-            </h2>
-            <p className="text-red-300 mb-4">{error}</p>
-            <div className="space-x-4">
-              <button
-                onClick={() => window.location.reload()}
-                className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-              >
-                Retry
-              </button>
-              <Link
-                to="/admin"
-                className="inline-block px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-              >
-                Back to Admin
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#1a092c] p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex justify-center items-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-              <p className="text-white">Loading data...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-[#1a092c] p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Link to="/admin" className="p-2 bg-white/5 rounded-lg">
-                <ArrowLeft size={20} className="text-white" />
-              </Link>
-              <h1 className="text-2xl font-semibold text-white">Ramani Data</h1>
-            </div>
-            <div>
-              <button
-                onClick={handleExportCSV}
-                disabled={filteredBoys.length === 0}
-                className="flex items-center gap-2 px-4 py-2 bg-[#6d47a8] text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Download size={16} />
-                Export
-              </button>
-            </div>
+    <AdminLayout handleLogout={handleLogout}>
+      {/* Header */}
+      <motion.header
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="h-20 bg-[#1e0d24] border-b border-purple-800/30 flex items-center justify-between px-6"
+      >
+        <h2 className="text-xl font-semibold text-amber-100">
+          Ramani Boys Management
+        </h2>
+
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Search
+              size={18}
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400"
+            />
+            <input
+              type="text"
+              placeholder="Search boys..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 bg-[#2a1533] text-amber-50 border border-purple-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+            />
           </div>
 
-          {/* Search and Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="md:col-span-2 relative">
-              <input
-                type="text"
-                placeholder="Search by name, father's name, mobile, or location..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-[#1e0d24] border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-              />
-            </div>
-            <div className="flex gap-3">
-              <div className="flex-1 bg-[#1e0d24] rounded-lg p-3 text-center border border-gray-700">
-                <p className="text-lg font-semibold text-white">
-                  {filteredBoys.length}
-                </p>
-                <p className="text-gray-400 text-sm">Total</p>
-              </div>
-              <div className="flex-1 bg-[#1e0d24] rounded-lg p-3 text-center border border-gray-700">
-                <p className="text-lg font-semibold text-green-400">
+          <div className="flex items-center bg-[#2a1533] border border-purple-700/50 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-1 rounded ${
+                viewMode === 'grid'
+                  ? 'bg-purple-900/50 text-amber-300'
+                  : 'text-amber-100'
+              }`}
+            >
+              <Grid size={18} />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-1 rounded ${
+                viewMode === 'list'
+                  ? 'bg-purple-900/50 text-amber-300'
+                  : 'text-amber-100'
+              }`}
+            >
+              <List size={18} />
+            </button>
+          </div>
+        </div>
+      </motion.header>
+
+      {/* Main area */}
+      <main className="flex-1 p-6 overflow-auto flex flex-col min-h-[calc(100vh-5rem)]">
+        {/* Action buttons */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex flex-wrap items-center justify-between mb-6 gap-4"
+        >
+          <div>
+            <h3 className="text-lg font-medium text-amber-100">
+              {filteredBoys?.length} Ramani Boys{' '}
+              {searchTerm && `(filtered from ${boys.length})`}
+            </h3>
+            <div className="flex mt-2 gap-4">
+              <div className="px-3 py-1 bg-[#2a1533] rounded-lg text-center border border-purple-700/50">
+                <span className="text-sm text-purple-300">Not Married:</span>{' '}
+                <span className="text-green-400 font-medium">
                   {
                     filteredBoys.filter((boy) => boy?.isAlreadyMarried === 'No')
                       .length
                   }
-                </p>
-                <p className="text-gray-400 text-sm">Not Married</p>
+                </span>
+              </div>
+              <div className="px-3 py-1 bg-[#2a1533] rounded-lg text-center border border-purple-700/50">
+                <span className="text-sm text-purple-300">Married:</span>{' '}
+                <span className="text-amber-400 font-medium">
+                  {
+                    filteredBoys.filter(
+                      (boy) => boy?.isAlreadyMarried === 'Yes'
+                    ).length
+                  }
+                </span>
               </div>
             </div>
           </div>
-        </div>
 
-        {selectedBoy ? (
-          <div className="bg-[#1e0d24] border border-gray-700 rounded-lg overflow-hidden">
-            <div className="p-4 border-b border-gray-700 flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-white">
-                {selectedBoy.boyName}'s Details
-              </h2>
-              <button
-                onClick={closeDetails}
-                className="p-2 text-gray-400 hover:text-white"
+          <div className="flex gap-3">
+            <button
+              onClick={exportToCSV}
+              disabled={loading || filteredBoys.length === 0}
+              className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-[#1e0d24] font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {loading ? (
+                'Exporting...'
+              ) : (
+                <>
+                  <Download size={18} />
+                  <span>Export CSV</span>
+                </>
+              )}
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Error handling */}
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-medium text-red-400 mb-2">
+              Error Loading Data
+            </h3>
+            <p className="text-red-300">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-red-500/30 hover:bg-red-500/40 text-red-200 rounded-lg transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {/* Loading state */}
+        {loading && !error && (
+          <div className="flex-1 flex justify-center items-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-400 mb-4"></div>
+              <p className="text-amber-200">Loading boys data...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Boy list */}
+        {!loading && !error && (
+          <div className="flex-1">
+            {viewMode === 'grid' ? (
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
               >
-                Close
-              </button>
-            </div>
-            <div className="p-6">
-              <BoyDetailsCard
-                boyData={selectedBoy}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            </div>
-          </div>
-        ) : (
-          // Boys List
-          <div className="bg-[#1e0d24] border border-gray-700 rounded-lg overflow-hidden">
-            {filteredBoys.length === 0 ? (
-              <div className="text-center py-12">
-                <h3 className="text-lg font-semibold text-gray-300 mb-2">
-                  {searchTerm ? 'No results found' : 'No data available'}
-                </h3>
-                <p className="text-gray-400">
-                  {searchTerm
-                    ? `No records match your search for "${searchTerm}"`
-                    : 'There are no records registered yet.'}
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-white">
-                  <thead className="bg-[#1a092c] border-b border-gray-700">
-                    <tr>
-                      <th className="py-3 px-4 text-left">Name</th>
-                      <th className="py-3 px-4 text-left">Father's Name</th>
-                      <th className="py-3 px-4 text-left">Mobile</th>
-                      <th className="py-3 px-4 text-left">Location</th>
-                      <th className="py-3 px-4 text-left">Status</th>
-                      <th className="py-3 px-4 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredBoys.map((boy) => {
-                      if (!boy || !boy._id) return null;
+                {currentBoys.length === 0 ? (
+                  <div className="col-span-full py-12 text-center">
+                    <h3 className="text-lg font-medium text-amber-200 mb-2">
+                      {searchTerm ? 'No results found' : 'No boys registered'}
+                    </h3>
+                    <p className="text-amber-100/70">
+                      {searchTerm
+                        ? `No records match your search for "${searchTerm}"`
+                        : 'There are no Ramani boys registered yet.'}
+                    </p>
+                  </div>
+                ) : (
+                  currentBoys.map((boy) => (
+                    <motion.div
+                      key={boy._id || boy.createdAt}
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-gradient-to-br from-[#1e0d24] to-[#3a1d44] rounded-lg shadow-md overflow-hidden border border-purple-700/30"
+                    >
+                      <div className="p-5">
+                        <div className="flex justify-between items-start mb-3">
+                          <h4 className="text-lg font-medium text-amber-200 truncate">
+                            {boy.boyName}
+                          </h4>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEditBoy(boy._id)}
+                              className="text-amber-400 hover:text-amber-300 transition-colors"
+                            >
+                              <Edit size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteBoy(boy._id)}
+                              className="text-red-400 hover:text-red-300 transition-colors"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </div>
 
-                      return (
-                        <tr
-                          key={boy._id}
-                          className="border-b border-gray-700 hover:bg-[#2a1442]"
-                          onClick={() => handleViewDetails(boy)}
-                        >
-                          <td className="py-3 px-4">{boy.boyName}</td>
-                          <td className="py-3 px-4">{boy.boyFatherName}</td>
-                          <td className="py-3 px-4">{boy.mobileNumber}</td>
-                          <td className="py-3 px-4">
-                            {boy.district}
-                            {boy.state && `, ${boy.state}`}
-                          </td>
-                          <td className="py-3 px-4">
+                        <div className="text-amber-100/80 space-y-2">
+                          <p className="flex items-center gap-2">
+                            <span className="text-purple-300">Father:</span>
+                            <span className="text-amber-100 truncate">
+                              {boy.boyFatherName || 'N/A'}
+                            </span>
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <span className="text-purple-300">Age:</span>
+                            <span className="text-amber-100">
+                              {calculateAge(boy.boyDOB)} years
+                            </span>
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <span className="text-purple-300">Phone:</span>
+                            <span className="text-amber-100">
+                              {boy.mobileNumber || 'N/A'}
+                            </span>
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <span className="text-purple-300">Status:</span>
                             <span
-                              className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              className={`text-amber-100 px-2 py-0.5 rounded-full text-xs ${
                                 boy.isAlreadyMarried === 'No'
                                   ? 'bg-green-500/20 text-green-300'
-                                  : 'bg-red-500/20 text-red-300'
+                                  : 'bg-amber-500/20 text-amber-300'
                               }`}
                             >
                               {boy.isAlreadyMarried || 'N/A'}
                             </span>
-                          </td>
-                          <td className="py-3 px-4 text-center">
-                            <div className="flex justify-center items-center space-x-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEdit(boy._id);
-                                }}
-                                className="p-1 text-blue-400 hover:text-blue-300"
-                                title="Edit"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDelete(boy._id);
-                                }}
-                                className="p-1 text-red-400 hover:text-red-300"
-                                title="Delete"
-                              >
-                                Delete
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleViewDetails(boy);
-                                }}
-                                className="p-1 text-purple-400 hover:text-purple-300"
-                              >
-                                <ChevronRight size={16} />
-                              </button>
-                            </div>
-                          </td>
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <span className="text-purple-300">Location:</span>
+                            <span className="text-amber-100 truncate">
+                              {boy.district
+                                ? `${boy.district}, ${boy.state || ''}`
+                                : 'N/A'}
+                            </span>
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={() => handleBoySelect(boy)}
+                          className="mt-4 text-sm text-amber-400 hover:text-amber-300 transition-colors"
+                        >
+                          View Details
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))
+                )}
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="bg-gradient-to-br from-[#1e0d24] to-[#3a1d44] rounded-lg shadow-lg overflow-hidden border border-purple-700/30"
+              >
+                {currentBoys.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <h3 className="text-lg font-medium text-amber-200 mb-2">
+                      {searchTerm ? 'No results found' : 'No boys registered'}
+                    </h3>
+                    <p className="text-amber-100/70">
+                      {searchTerm
+                        ? `No records match your search for "${searchTerm}"`
+                        : 'There are no Ramani boys registered yet.'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead className="bg-purple-900/30 text-amber-200 border-b border-purple-700/50">
+                        <tr>
+                          <th className="px-6 py-4 font-medium">Name</th>
+                          <th className="px-6 py-4 font-medium">
+                            Father's Name
+                          </th>
+                          <th className="px-6 py-4 font-medium">Age</th>
+                          <th className="px-6 py-4 font-medium">Phone</th>
+                          <th className="px-6 py-4 font-medium">Location</th>
+                          <th className="px-6 py-4 font-medium">Status</th>
+                          <th className="px-6 py-4 font-medium">Actions</th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                      </thead>
+
+                      <tbody>
+                        {currentBoys.map((boy, index) => (
+                          <tr
+                            key={boy._id || index}
+                            className={`hover:bg-purple-900/20 ${
+                              index % 2 === 0 ? 'bg-purple-900/10' : ''
+                            }`}
+                          >
+                            <td className="px-6 py-4 font-medium text-amber-100">
+                              {boy.boyName}
+                            </td>
+                            <td className="px-6 py-4 text-amber-100/80">
+                              {boy.boyFatherName || 'N/A'}
+                            </td>
+                            <td className="px-6 py-4 text-amber-100/80">
+                              {calculateAge(boy.boyDOB)} years
+                            </td>
+                            <td className="px-6 py-4 text-amber-100/80">
+                              {boy.mobileNumber || 'N/A'}
+                            </td>
+                            <td className="px-6 py-4 text-amber-100/80">
+                              {boy.district
+                                ? `${boy.district}, ${boy.state || ''}`
+                                : 'N/A'}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs ${
+                                  boy.isAlreadyMarried === 'No'
+                                    ? 'bg-green-500/20 text-green-300'
+                                    : 'bg-amber-500/20 text-amber-300'
+                                }`}
+                              >
+                                {boy.isAlreadyMarried || 'N/A'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex gap-3">
+                                <button
+                                  onClick={() => handleBoySelect(boy)}
+                                  className="text-amber-400 hover:text-amber-300 transition-colors"
+                                >
+                                  View
+                                </button>
+                                <button
+                                  onClick={() => handleEditBoy(boy._id)}
+                                  className="text-blue-400 hover:text-blue-300 transition-colors"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteBoy(boy._id)}
+                                  className="text-red-400 hover:text-red-300 transition-colors"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </motion.div>
             )}
           </div>
         )}
-      </div>
-    </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && !loading && !error && (
+          <div className="mt-6 flex justify-center">
+            <div className="flex space-x-1">
+              <button
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 rounded bg-[#2a1533] text-amber-100 disabled:opacity-50"
+              >
+                First
+              </button>
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 rounded bg-[#2a1533] text-amber-100 disabled:opacity-50"
+              >
+                Prev
+              </button>
+
+              {/* Page numbers */}
+              {[...Array(totalPages)].map((_, i) => {
+                // Show current page, one page before and after, first and last pages
+                if (
+                  i === 0 ||
+                  i === totalPages - 1 ||
+                  (i >= currentPage - 2 && i <= currentPage)
+                ) {
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => handlePageChange(i + 1)}
+                      className={`px-3 py-1 rounded ${
+                        currentPage === i + 1
+                          ? 'bg-amber-600 text-[#1e0d24]'
+                          : 'bg-[#2a1533] text-amber-100'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  );
+                } else if (i === currentPage + 1 || i === 1) {
+                  return (
+                    <span key={i} className="px-1 text-amber-100">
+                      ...
+                    </span>
+                  );
+                }
+                return null;
+              })}
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 rounded bg-[#2a1533] text-amber-100 disabled:opacity-50"
+              >
+                Next
+              </button>
+              <button
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 rounded bg-[#2a1533] text-amber-100 disabled:opacity-50"
+              >
+                Last
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Boy details sidebar */}
+      {showBoyDetails && selectedBoy && (
+        <motion.div
+          initial={{ x: 100, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: 100, opacity: 0 }}
+          className="w-full sm:w-96 bg-gradient-to-b from-[#1e0d24] to-[#3a1d44] text-amber-100 border-l border-purple-800/30 fixed top-0 right-0 bottom-0 z-10 flex flex-col shadow-xl"
+        >
+          <div className="h-20 flex items-center justify-between px-6 border-b border-purple-800/30">
+            <h3 className="text-xl font-semibold text-amber-200">
+              Boy Details
+            </h3>
+            <button
+              onClick={closeDetailsPanel}
+              className="text-amber-300 hover:text-amber-200 transition-colors"
+            >
+              <Edit size={24} />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h4 className="text-lg font-medium text-amber-300">
+                  Personal Information
+                </h4>
+                <div className="bg-purple-900/20 p-4 rounded-lg space-y-3">
+                  <div>
+                    <p className="text-sm text-purple-300">Full Name</p>
+                    <p className="text-amber-100">
+                      {selectedBoy.boyName || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-300">Father's Name</p>
+                    <p className="text-amber-100">
+                      {selectedBoy.boyFatherName || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-300">Mother's Name</p>
+                    <p className="text-amber-100">
+                      {selectedBoy.boyMotherName || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-300">Date of Birth</p>
+                    <p className="text-amber-100">
+                      {formatDate(selectedBoy.boyDOB)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-300">Age</p>
+                    <p className="text-amber-100">
+                      {calculateAge(selectedBoy.boyDOB)} years
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-300">Phone Number</p>
+                    <p className="text-amber-100">
+                      {selectedBoy.mobileNumber || 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="text-lg font-medium text-amber-300">
+                  Address Information
+                </h4>
+                <div className="bg-purple-900/20 p-4 rounded-lg space-y-3">
+                  <div>
+                    <p className="text-sm text-purple-300">Full Address</p>
+                    <p className="text-amber-100">
+                      {selectedBoy.fullAddress || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-300">Tehsil</p>
+                    <p className="text-amber-100">
+                      {selectedBoy.tehsil || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-300">District</p>
+                    <p className="text-amber-100">
+                      {selectedBoy.district || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-300">State</p>
+                    <p className="text-amber-100">
+                      {selectedBoy.state || 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="text-lg font-medium text-amber-300">
+                  Marriage Information
+                </h4>
+                <div className="bg-purple-900/20 p-4 rounded-lg space-y-3">
+                  <div>
+                    <p className="text-sm text-purple-300">Already Married</p>
+                    <p
+                      className={`text-amber-100 ${
+                        selectedBoy.isAlreadyMarried === 'No'
+                          ? 'text-green-400'
+                          : selectedBoy.isAlreadyMarried === 'Yes'
+                          ? 'text-amber-400'
+                          : ''
+                      }`}
+                    >
+                      {selectedBoy.isAlreadyMarried || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-300">Wants to Marry</p>
+                    <p className="text-amber-100">
+                      {selectedBoy.wantToMarry || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-300">Preferred State</p>
+                    <p className="text-amber-100">
+                      {selectedBoy.wantToMarryState || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-300">Occupation</p>
+                    <p className="text-amber-100">
+                      {selectedBoy.occupation || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-300">Monthly Income</p>
+                    <p className="text-amber-100">
+                      {selectedBoy.monthlyIncome
+                        ? `₹${selectedBoy.monthlyIncome}`
+                        : 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="text-lg font-medium text-amber-300">
+                  Ramaini Information
+                </h4>
+                <div className="bg-purple-900/20 p-4 rounded-lg space-y-3">
+                  <div>
+                    <p className="text-sm text-purple-300">Serial No</p>
+                    <p className="text-amber-100">
+                      {selectedBoy.ramainSiriNo || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-300">Location</p>
+                    <p className="text-amber-100">
+                      {selectedBoy.location || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-300">Date of Ramaini</p>
+                    <p className="text-amber-100">
+                      {formatDate(selectedBoy.dateOfRamaini)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {(selectedBoy.boyPhoto ||
+                selectedBoy.boySignature ||
+                selectedBoy.familySignature) && (
+                <div className="space-y-2">
+                  <h4 className="text-lg font-medium text-amber-300">
+                    Documents
+                  </h4>
+                  <div className="bg-purple-900/20 p-4 rounded-lg grid grid-cols-2 gap-3">
+                    {selectedBoy.boyPhoto && (
+                      <a
+                        href={selectedBoy.boyPhoto}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-purple-900/30 p-3 rounded-lg text-center hover:bg-purple-900/40 transition-colors"
+                      >
+                        <span className="text-amber-300 text-sm">
+                          Boy Photo
+                        </span>
+                      </a>
+                    )}
+                    {selectedBoy.boySignature && (
+                      <a
+                        href={selectedBoy.boySignature}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-purple-900/30 p-3 rounded-lg text-center hover:bg-purple-900/40 transition-colors"
+                      >
+                        <span className="text-amber-300 text-sm">
+                          Boy Signature
+                        </span>
+                      </a>
+                    )}
+                    {selectedBoy.familySignature && (
+                      <a
+                        href={selectedBoy.familySignature}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-purple-900/30 p-3 rounded-lg text-center hover:bg-purple-900/40 transition-colors"
+                      >
+                        <span className="text-amber-300 text-sm">
+                          Family Signature
+                        </span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="text-sm text-gray-400 border-t border-purple-700/30 pt-4 mt-6">
+                <div className="flex justify-between">
+                  <span>Created: {formatDate(selectedBoy.createdAt)}</span>
+                  <span>Updated: {formatDate(selectedBoy.updatedAt)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 border-t border-purple-800/30">
+            <div className="flex gap-4">
+              <button
+                className="flex-1 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-[#1e0d24] font-medium rounded-lg transition-colors"
+                onClick={() => handleEditBoy(selectedBoy._id)}
+              >
+                Edit Boy
+              </button>
+              <button
+                onClick={() => handleDeleteBoy(selectedBoy._id)}
+                className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-lg transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Notification */}
+      {notification.show && (
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 50 }}
+          className={`fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg ${
+            notification.type === 'success'
+              ? 'bg-green-500/90 text-white'
+              : 'bg-red-500/90 text-white'
+          }`}
+        >
+          {notification.message}
+        </motion.div>
+      )}
+    </AdminLayout>
   );
 };
 

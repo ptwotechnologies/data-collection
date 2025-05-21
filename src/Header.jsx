@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import logoRamini from './assets/logo-ramini.png'; // Adjust path as needed
+import spiritualLeader from './assets/spiritual_leader.png'; // Adjust path as needed
 
 export default function Header() {
   const [isHovered, setIsHovered] = useState(false);
@@ -8,11 +10,7 @@ export default function Header() {
       <div className="container mx-auto flex items-center justify-between">
         {/* Left logo */}
         <div className="w-1/6">
-          <img
-            src="./src/assets/logo-ramini.png"
-            alt="Organization Logo"
-            className="w-20 h-20"
-          />
+          <img src={logoRamini} alt="Organization Logo" className="w-20 h-20" />
         </div>
 
         {/* Center content */}
@@ -41,7 +39,7 @@ export default function Header() {
         {/* Right image */}
         <div className="w-1/6 flex justify-end">
           <img
-            src="./src/assets/spiritual_leader.png"
+            src={spiritualLeader}
             alt="Spiritual Leader"
             className="w-24 h-24"
           />

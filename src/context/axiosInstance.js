@@ -1,13 +1,12 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://data-collection-mig2.onrender.com/api';
+const API_BASE_URL = 'https://data-collection-mig2.onrender.com';
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true, // This is correct and necessary for your CORS issue
+  withCredentials: true,
 });
 
-// Add a request interceptor to dynamically include the token
 axiosInstance.interceptors.request.use(
   (config) => {
     // Get the latest token for each request

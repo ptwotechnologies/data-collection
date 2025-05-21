@@ -4,98 +4,99 @@ const Pagination = ({
   currentPage,
   totalPages,
   onPageChange,
-  siblingCount = 1,
   className = '',
 }) => {
-  // Generate page numbers to display
-  const generatePageNumbers = () => {
+  // Generate page numbers for display
+  const getPageNumbers = () => {
     const pages = [];
-    const totalNumbers = siblingCount * 2 + 3; // Total number of page items to show
-    const totalBlockCount = totalNumbers + 2; // With first and last pages
 
-    // If total pages are less than total block count, just show all pages
-    if (totalPages <= totalBlockCount) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      const leftSiblingIndex = Math.max(currentPage - siblingCount, 1);
-      const rightSiblingIndex = Math.min(
-        currentPage + siblingCount,
-        totalPages
-      );
+    // Always show first page
+    pages.push(1);
 
-      // Show dots when pages exceed the number we want to display
-      const shouldShowLeftDots = leftSiblingIndex > 2;
-      const shouldShowRightDots = rightSiblingIndex < totalPages - 1;
-
-      // Always show first page
-      pages.push(1);
-
-      // Handle left dots
-      if (shouldShowLeftDots) {
+    // Current page and neighbors
+    for (
+      let i = Math.max(2, currentPage - 1);
+      i <= Math.min(totalPages - 1, currentPage + 1);
+      i++
+    ) {
+      if (pages[pages.length - 1] !== i - 1) {
+        // Add ellipsis if there's a gap
         pages.push('...');
-      } else if (!shouldShowLeftDots && leftSiblingIndex > 1) {
-        pages.push(2);
       }
+      pages.push(i);
+    }
 
-      // Handle middle pages
-      for (let i = leftSiblingIndex; i <= rightSiblingIndex; i++) {
-        if (i !== 1 && i !== totalPages) {
-          pages.push(i);
-        }
-      }
-
-      // Handle right dots
-      if (shouldShowRightDots) {
+    // Last page (if not already included)
+    if (totalPages > 1) {
+      if (pages[pages.length - 1] !== totalPages - 1) {
         pages.push('...');
-      } else if (!shouldShowRightDots && rightSiblingIndex < totalPages) {
-        pages.push(totalPages - 1);
       }
-
-      // Always show last page
-      pages.push(totalPages);
+      if (pages[pages.length - 1] !== totalPages) {
+        pages.push(totalPages);
+      }
     }
 
     return pages;
   };
 
-  const pages = generatePageNumbers();
+  const pageNumbers = getPageNumbers();
 
   return (
-    <div className={`flex justify-center items-center gap-2 mt-6 ${className}`}>
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="px-3 py-1 rounded-md bg-purple-900/30 text-amber-100 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-purple-800/50 transition-colors"
-      >
-        Previous
-      </button>
-
-      {pages.map((page, index) => (
+    <div className={`flex justify-center ${className}`}>
+      <div className="flex space-x-1">
         <button
-          key={index}
-          onClick={() => (typeof page === 'number' ? onPageChange(page) : null)}
-          className={`w-9 h-9 flex items-center justify-center rounded-md ${
-            page === currentPage
-              ? 'bg-amber-600 text-[#1e0d24] font-medium'
-              : page === '...'
-              ? 'bg-transparent cursor-default'
-              : 'bg-purple-900/30 text-amber-100 hover:bg-purple-800/50'
-          } transition-colors`}
-          disabled={page === '...'}
+          onClick={() => onPageChange(1)}
+          disabled={currentPage === 1}
+          className="px-3 py-1 rounded bg-[#2a1533] text-amber-100 disabled:opacity-50"
         >
-          {page}
+          First
         </button>
-      ))}
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-3 py-1 rounded bg-[#2a1533] text-amber-100 disabled:opacity-50"
+        >
+          Prev
+        </button>
 
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="px-3 py-1 rounded-md bg-purple-900/30 text-amber-100 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-purple-800/50 transition-colors"
-      >
-        Next
-      </button>
+        {pageNumbers.map((page, index) =>
+          page === '...' ? (
+            <span
+              key={`ellipsis-${index}`}
+              className="px-2 py-1 text-amber-100"
+            >
+              ...
+            </span>
+          ) : (
+            <button
+              key={`page-${page}`}
+              onClick={() => onPageChange(page)}
+              className={`px-3 py-1 rounded ${
+                currentPage === page
+                  ? 'bg-amber-600 text-[#1e0d24]'
+                  : 'bg-[#2a1533] text-amber-100'
+              }`}
+            >
+              {page}
+            </button>
+          )
+        )}
+
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 rounded bg-[#2a1533] text-amber-100 disabled:opacity-50"
+        >
+          Next
+        </button>
+        <button
+          onClick={() => onPageChange(totalPages)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 rounded bg-[#2a1533] text-amber-100 disabled:opacity-50"
+        >
+          Last
+        </button>
+      </div>
     </div>
   );
 };

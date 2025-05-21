@@ -71,6 +71,13 @@ function RegisterModal({ handleCloseModal }) {
         taluk: '',
       }));
     }
+
+    if (name === 'jobType') {
+      setFormData((prev) => ({
+        ...prev,
+        jobRole: '', // Reset job role when job type changes
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -237,30 +244,34 @@ function RegisterModal({ handleCloseModal }) {
                   </select>
                 </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.4 }}
-                >
-                  <label
-                    htmlFor="jobRole"
-                    className="block text-amber-100 mb-1 sm:mb-2 font-medium"
+                {formData.jobType === 'private' && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.4 }}
                   >
-                    Business Type
-                  </label>
-                  <select
-                    id="jobRole"
-                    name="jobRole"
-                    value={formData.jobRole}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all appearance-none"
-                  >
-                    <option value="">Select Business Type</option>
-                    <option value="manufacture">Manufacture</option>
-                    <option value="service">Service</option>
-                  </select>
-                </motion.div>
+                    <label
+                      htmlFor="jobRole"
+                      className="block text-amber-100 mb-1 sm:mb-2 font-medium"
+                    >
+                      Job Role
+                    </label>
+                    <select
+                      id="jobRole"
+                      name="jobRole"
+                      value={formData.jobRole}
+                      onChange={handleChange}
+                      required={formData.jobType === 'private'}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-[#2a1533] text-amber-50 border border-purple-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all appearance-none"
+                    >
+                      <option value="">Select Job Role</option>
+                      <option value="manufacture">Manufacture</option>
+                      <option value="service">Service</option>
+                      <option value="selfEmployed">Self Employed</option>
+                      <option value="freelance">Freelancing</option>
+                    </select>
+                  </motion.div>
+                )}
               </div>
 
               {/* Location and Job Description */}

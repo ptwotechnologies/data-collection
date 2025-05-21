@@ -1,13 +1,15 @@
+import { Route, Routes } from 'react-router-dom';
 import AdminPanel from './AdminPanel';
+import AdminLayout from './AdminLayout';
 import './App.css';
 import ReligiousPortal from './ReligionPortal';
-import { Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './utils/ProtectedRoute';
 import GirlForm from './GirlForm';
 import BoyForm from './BoyForm';
 import DownloadCertificate from './DownloadCertificate';
 import RamaniGirlList from './RamaniGirlList';
 import RamaniBoyList from './RamaniBoyList';
+import AdminUserList from './AdminUserList';
 
 function App() {
   return (
@@ -18,6 +20,14 @@ function App() {
         element={
           <ProtectedRoute>
             <AdminPanel />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute>
+            <AdminUserList />
           </ProtectedRoute>
         }
       />

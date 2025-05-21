@@ -1,25 +1,23 @@
+// Create a new unified i18n.js file that combines both girl and boy translations
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-// Initialize i18n
+// Initialize i18n with namespaces
 i18n.use(initReactI18next).init({
   resources: {
     en: {
-      translation: {
+      // Common translations shared by both forms
+      common: {
         title: 'Ramaini (Marriage) Registration Form',
         subtitle: 'Jai Purnabrahma Kabir Saheb',
         personalInfo: 'Personal Information',
-        boyName: 'Name',
-        boyFatherName: "Father's Name",
-        boyMotherName: "Mother's Name",
-        boyDOB: 'Date of Birth',
-        boyAge: 'Age',
-        girlmobileNumber: "Girl's Mobile Number",
         contactInfo: 'Contact Information',
         fullAddress: 'Full Address',
         tehsil: 'Tehsil',
         district: 'District',
         state: 'State',
+        divorceWarning:
+          '(If yes then it is mandatory to attach the divorce papers with the form, otherwise Ramaini will not be done.)',
         mobileNumber: 'Mobile Number',
         religiousInfo: 'Religious Information',
         firstNameReceiptDate: 'Pratham Naam Date',
@@ -31,21 +29,16 @@ i18n.use(initReactI18next).init({
           'I am {{name}}, {{relation}} of {{resident}}, wanting {{person}} from {{state}} to marry.',
         marriageDetails: 'Marriage Details',
         childName: "Child's Name",
-        childFrom: "Girl's Father/Guardian Name",
         childDistrict: 'Child District',
         ramainiSiriNo: 'Ramaini Siri No.',
         location: 'Location',
         dateOfRamaini: 'Date of Ramaini',
         questions: 'Important Questions',
-        isAdult:
-          'Has the boy attained the age of 21 years as per government rules?',
         isDowryFree: 'Is this a dowry-free marriage?',
         agreeWithRules: 'Do you agree with the rules of Ramaini marriage?',
-        isAlreadyMarried: 'Is the girl already married?',
-        note: 'Note: Aadhaar card of boy and girl and parents, photocopy of Namdiksha form, 10th mark sheet and photos are mandatory.',
+        note: 'Note: Aadhaar card of male and female and parents, photocopy of Namdiksha form, 10th mark sheet and photos are mandatory.',
         signatureSection: 'Signatures',
         familySignature: 'Family Signature',
-        signature: 'Signature',
         sigName: 'Name',
         sigMobile: 'Mobile',
         sigRelation: 'Relationship with person',
@@ -81,6 +74,14 @@ i18n.use(initReactI18next).init({
         divorceCertificate: 'Divorce Certificate',
         divorceCertificateDesc: 'Upload a legally valid divorce certificate',
         documentGuidelines: 'Document Guidelines',
+        docGuidelinesClear:
+          'All documents must be clearly visible and readable',
+        required: 'Required',
+        docGuidelinesSize: 'Files must be less than 5MB in size',
+        docGuidelinesFormat: 'Accepted formats: JPG, PNG, or PDF',
+        docGuidelinesNoEdit: 'Do not submit edited or manipulated documents',
+        docGuidelinesDivorce:
+          'Divorce certificate must be legally valid and issued by a competent authority',
         allDocumentsReadable:
           'All documents must be clearly visible and readable',
         fileSizeLimit: 'Files must be less than 5MB in size',
@@ -90,23 +91,72 @@ i18n.use(initReactI18next).init({
           'Divorce certificate must be legally valid and issued by a competent authority',
         uploadRequiredDocs:
           'Please upload all required documents before submitting',
+        girlPhotoLabel: "Girl's Photo (Bride's Photo)", // Hindi: "लड़की का फोटो (दुल्हन का फोटो)"
+        boyPhotoLabel: "Boy's Photo (Groom's Photo)", // Hindi: "लड़के का फोटो (दूल्हे का फोटो)"
+        photoAgeWarning: 'Do not upload photo older than 1 month.', // Hindi: "1 महीने से पुराना फोटो अपलोड न करें।"
+        girlPhotoText: 'Photo of girl', // Hindi: "लड़की का फोटो"
+        boyPhotoText: "Boy's photo", // Hindi: "लड़के का फोटो"
+        clickToUpload: 'Click to upload document', // Hindi: "दस्तावेज़ अपलोड करने के लिए क्लिक करें"
+        fileSizeInfo: 'JPG, PNG or PDF (max 5MB)', // Hindi: "JPG, PNG या PDF (अधिकतम 5MB)"
+        girlFamilyInfo: "Girl's family information", // Hindi: "लड़की के परिवार की जानकारी"
+        boyFamilyInfo: "Boy's family information", // Hindi: "लड़के के परिवार की जानकारी"
+        requiredDocumentsHeader: 'Required Documents:',
+      },
+
+      // Girl-specific translations
+      girl: {
+        name: 'Name',
+        fatherName: "Father's Name",
+        motherName: "Mother's Name",
+        dob: 'Date of Birth',
+        age: 'Age',
+        signature: 'Signature',
+        boyMobileNumber: "Boy's Mobile Number",
+        childFrom: "Boy's Father/Guardian Name",
+        isAdult:
+          'Has the female attained the age of 18 years as per government rules?',
+        isAlreadyMarried: 'Is the person already married?',
+      },
+
+      // Boy-specific translations
+      boy: {
+        name: 'Name',
+        fatherName: "Father's Name",
+        motherName: "Mother's Name",
+        dob: 'Date of Birth',
+        age: 'Age',
+        signature: 'Signature',
+        girlMobileNumber: "Girl's Mobile Number",
+        childFrom: "Girl's Father/Guardian Name",
+        isAdult:
+          'Has the boy attained the age of 21 years as per government rules?',
+        isAlreadyMarried: 'Is the girl already married?',
       },
     },
+
     hi: {
-      translation: {
+      // Hindi common translations - replace the content in your i18n.js file
+      common: {
         title: 'रमैनी (विवाह) पंजीकरण प्रपत्र',
         subtitle: 'जय पूर्णब्रह्म कबीर साहेब',
         personalInfo: 'व्यक्तिगत जानकारी',
-        boyName: 'नाम',
-        boyFatherName: 'पिता का नाम',
-        boyMotherName: 'माता का नाम',
-        boyDOB: 'जन्म तिथि',
-        boyAge: 'आयु',
-        girlmobileNumber: 'लड़की का मोबाइल नंबर',
         contactInfo: 'संपर्क जानकारी',
         fullAddress: 'पूरा पता',
         tehsil: 'तहसील',
         district: 'जिला',
+        required: 'आवश्यक',
+        girlPhotoLabel: 'लड़की का फोटो (दुल्हन का फोटो)',
+        boyPhotoLabel: 'लड़के का फोटो (दूल्हे का फोटो)',
+        photoAgeWarning: '1 महीने से पुराना फोटो अपलोड न करें।',
+        girlPhotoText: 'लड़की का फोटो',
+        boyPhotoText: 'लड़के का फोटो',
+        clickToUpload: 'दस्तावेज़ अपलोड करने के लिए क्लिक करें',
+        fileSizeInfo: 'JPG, PNG या PDF (अधिकतम 5MB)',
+        girlFamilyInfo: 'लड़की के परिवार की जानकारी',
+        boyFamilyInfo: 'लड़के के परिवार की जानकारी',
+        requiredDocumentsHeader: 'आवश्यक दस्तावेज़:',
+        divorceWarning:
+          '(यदि हां, तो रमैनी नहीं की जाएगी।) रमैनी के साथ तलाक के कागजात को फॉर्म के साथ संलग्न करना अनिवार्य है।',
         state: 'राज्य',
         mobileNumber: 'मोबाइल नंबर',
         religiousInfo: 'धार्मिक जानकारी',
@@ -119,21 +169,16 @@ i18n.use(initReactI18next).init({
           'मैं {{name}}, {{resident}} का {{relation}}, {{state}} से {{person}} से विवाह करना चाहता हूं।',
         marriageDetails: 'विवाह विवरण',
         childName: 'बच्चे का नाम',
-        childFrom: 'लड़की के पिता/अभिभावक का नाम',
         childDistrict: 'बच्चे का जिला',
         ramainiSiriNo: 'रमैनी सिरी नंबर',
         location: 'स्थान',
         dateOfRamaini: 'रमैनी की तिथि',
         questions: 'महत्वपूर्ण प्रश्न',
-        isAdult:
-          'क्या लड़का सरकारी नियमों के अनुसार 21 वर्ष की आयु प्राप्त कर चुका है?',
         isDowryFree: 'क्या यह दहेज-मुक्त विवाह है?',
         agreeWithRules: 'क्या आप रमैनी विवाह के नियमों से सहमत हैं?',
-        isAlreadyMarried: 'क्या लड़की पहले से विवाहित है?',
         note: 'नोट: लड़के और लड़की और माता-पिता का आधार कार्ड, नामदीक्षा फॉर्म की फोटोकॉपी, 10वीं की मार्कशीट और फोटो अनिवार्य हैं।',
         signatureSection: 'हस्ताक्षर',
         familySignature: 'परिवार का हस्ताक्षर',
-        signature: 'हस्ताक्षर',
         sigName: 'नाम',
         sigMobile: 'मोबाइल',
         sigRelation: 'व्यक्ति के साथ संबंध',
@@ -149,7 +194,7 @@ i18n.use(initReactI18next).init({
         success: 'फॉर्म सफलतापूर्वक जमा किया गया!',
         error: 'फॉर्म जमा करने में त्रुटि। कृपया पुनः प्रयास करें।',
         toggleLanguage: 'Change Language / भाषा बदलें',
-        acceptDeclaration: 'मैं घोषणा को स्वीकार करता हूं',
+        acceptDeclaration: 'मैं घोषणा को स्वीकार करता हूं और सहमत हूं',
         declarationDetails: 'घोषणा विवरण',
         declarantSon: 'घोषणाकर्ता के पिता का नाम',
         ramainSiriNo: 'रमैनी सिरी नंबर',
@@ -160,30 +205,69 @@ i18n.use(initReactI18next).init({
         editDeclarationDetails: 'घोषणा विवरण संपादित करें',
         requiredDocuments: 'आवश्यक दस्तावेज',
         aadharCard: 'आधार कार्ड',
-        aadharCardDesc: 'आधार कार्ड का स्पष्ट स्कैन या फोटो अपलोड करें',
+        aadharCardDesc: 'आधार कार्ड की स्पष्ट स्कैन या फोटो अपलोड करें',
         marksheet: '10वीं कक्षा की मार्कशीट',
         marksheetDesc:
-          '10वीं कक्षा की मार्कशीट का स्पष्ट स्कैन या फोटो अपलोड करें',
+          '10वीं कक्षा की मार्कशीट की स्पष्ट स्कैन या फोटो अपलोड करें',
         namdikashaForm: 'नामदीक्षा फॉर्म',
         namdikashaFormDesc: 'यदि उपलब्ध हो तो नामदीक्षा फॉर्म अपलोड करें',
-        divorceCertificate: 'तलाक प्रमाण पत्र',
+        divorceCertificate: 'तलाक प्रमाणपत्र',
         divorceCertificateDesc:
-          'कानूनी रूप से मान्य तलाक प्रमाण पत्र अपलोड करें',
+          'कानूनी रूप से मान्य तलाक प्रमाणपत्र अपलोड करें',
         documentGuidelines: 'दस्तावेज़ दिशानिर्देश',
+        docGuidelinesClear:
+          'सभी दस्तावेज स्पष्ट रूप से दिखाई देने और पढ़ने योग्य होने चाहिए',
+        docGuidelinesSize: 'फ़ाइलें 5MB से कम आकार की होनी चाहिए',
+        docGuidelinesFormat: 'स्वीकृत प्रारूप: JPG, PNG या PDF',
+        docGuidelinesNoEdit: 'संपादित या हेरफेर किए गए दस्तावेज़ जमा न करें',
+        docGuidelinesDivorce:
+          'तलाक प्रमाणपत्र कानूनी रूप से मान्य और सक्षम प्राधिकारी द्वारा जारी किया गया होना चाहिए',
         allDocumentsReadable:
-          'सभी दस्तावेज स्पष्ट रूप से दिखाई देने योग्य और पठनीय होने चाहिए',
-        fileSizeLimit: 'फ़ाइलों का आकार 5MB से कम होना चाहिए',
-        acceptedFormats: 'स्वीकृत प्रारूप: JPG, PNG, या PDF',
-        noEditedDocs: 'संपादित या हेरफेर किए गए दस्तावेज जमा न करें',
+          'सभी दस्तावेज स्पष्ट रूप से दिखाई देने और पढ़ने योग्य होने चाहिए',
+        fileSizeLimit: 'फ़ाइलें 5MB से कम आकार की होनी चाहिए',
+        acceptedFormats: 'स्वीकृत प्रारूप: JPG, PNG या PDF',
+        noEditedDocs: 'संपादित या हेरफेर किए गए दस्तावेज़ जमा न करें',
         divorceCertValid:
-          'तलाक प्रमाण पत्र कानूनी रूप से मान्य और सक्षम प्राधिकारी द्वारा जारी किया गया होना चाहिए',
+          'तलाक प्रमाणपत्र कानूनी रूप से मान्य और सक्षम प्राधिकारी द्वारा जारी किया गया होना चाहिए',
         uploadRequiredDocs:
           'कृपया जमा करने से पहले सभी आवश्यक दस्तावेज अपलोड करें',
+      },
+
+      // Hindi girl-specific translations
+      girl: {
+        name: 'नाम',
+        fatherName: 'पिता का नाम',
+        motherName: 'माता का नाम',
+        dob: 'जन्म तिथि',
+        age: 'आयु',
+        signature: 'हस्ताक्षर',
+        boyMobileNumber: 'लड़के का मोबाइल नंबर',
+        childFrom: 'लड़के के पिता/अभिभावक का नाम',
+        isAdult:
+          'क्या व्यक्ति सरकारी नियमों के अनुसार 18 वर्ष की आयु प्राप्त कर चुका है?',
+        isAlreadyMarried: 'क्या व्यक्ति पहले से विवाहित है?',
+      },
+
+      // Hindi boy-specific translations
+      boy: {
+        name: 'नाम',
+        fatherName: 'पिता का नाम',
+        motherName: 'माता का नाम',
+        dob: 'जन्म तिथि',
+        age: 'आयु',
+        signature: 'हस्ताक्षर',
+        girlMobileNumber: 'लड़की का मोबाइल नंबर',
+        childFrom: 'लड़की के पिता/अभिभावक का नाम',
+        isAdult:
+          'क्या लड़का सरकारी नियमों के अनुसार 21 वर्ष की आयु प्राप्त कर चुका है?',
+        isAlreadyMarried: 'क्या लड़की पहले से विवाहित है?',
       },
     },
   },
   lng: 'en',
   fallbackLng: 'en',
+  ns: ['common', 'boy', 'girl'],
+  defaultNS: 'common',
   interpolation: {
     escapeValue: false,
   },

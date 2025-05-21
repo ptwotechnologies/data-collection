@@ -1,99 +1,108 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Download, Edit, Trash2, Grid, List } from 'lucide-react';
+import {
+  Search,
+  Download,
+  Edit,
+  Trash2,
+  Grid,
+  List,
+  Upload,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import Papa from 'papaparse';
 import { toast } from 'react-toastify';
 import axiosInstance from './context/axiosInstance';
 import AdminLayout from './AdminPanel';
-import GirlDetailsCard from './GirlDetailsCard';
 
-const RamaniGirlList = () => {
+const AdminUserList = () => {
   const navigate = useNavigate();
-  const [girls, setGirls] = useState([]);
+  const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredGirls, setFilteredGirls] = useState([]);
-  const [selectedGirl, setSelectedGirl] = useState(null);
-  const [showGirlDetails, setShowGirlDetails] = useState(false);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showUserDetails, setShowUserDetails] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
   const [notification, setNotification] = useState({
     show: false,
     message: '',
     type: '',
   });
+  const [csvFile, setCsvFile] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentGirls = filteredGirls?.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = filteredGirls?.length
-    ? Math.ceil(filteredGirls.length / itemsPerPage)
+  const currentUsers = filteredUsers?.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = filteredUsers?.length
+    ? Math.ceil(filteredUsers.length / itemsPerPage)
     : 0;
 
   // Fetch data from API
   useEffect(() => {
-    const fetchGirls = async () => {
+    const fetchUsers = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        const response = await axiosInstance.get('/girl/all');
+        const response = await axiosInstance.get('/form');
 
         // Handle different response formats
-        const girlsArray = Array.isArray(response.data?.data)
-          ? response.data.data
-          : Array.isArray(response.data)
+        const usersArray = Array.isArray(response.data)
           ? response.data
+          : Array.isArray(response.data?.data)
+          ? response.data.data
           : [];
 
-        setGirls(girlsArray);
-        setFilteredGirls(girlsArray);
+        setUsers(usersArray);
+        setFilteredUsers(usersArray);
       } catch (err) {
         console.error('Fetch error:', err);
         setError(err.response?.data?.message || err.message);
         toast.error('Failed to load data');
-        setGirls([]);
-        setFilteredGirls([]);
+        setUsers([]);
+        setFilteredUsers([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchGirls();
+    fetchUsers();
   }, []);
 
   // Search functionality
   useEffect(() => {
     try {
       if (searchTerm.trim() === '') {
-        setFilteredGirls(girls);
+        setFilteredUsers(users);
       } else {
-        const filtered = girls.filter((girl) => {
-          if (!girl) return false;
+        const filtered = users.filter((user) => {
+          if (!user) return false;
 
           const searchLower = searchTerm.toLowerCase();
           return (
-            (girl.girlName &&
-              girl.girlName.toLowerCase().includes(searchLower)) ||
-            (girl.girlFatherName &&
-              girl.girlFatherName.toLowerCase().includes(searchLower)) ||
-            (girl.mobileNumber && girl.mobileNumber.includes(searchTerm)) ||
-            (girl.district &&
-              girl.district.toLowerCase().includes(searchLower)) ||
-            (girl.state && girl.state.toLowerCase().includes(searchLower))
+            (user.fullName &&
+              user.fullName.toLowerCase().includes(searchLower)) ||
+            (user.emailAddress &&
+              user.emailAddress.toLowerCase().includes(searchLower)) ||
+            (user.phoneNumber && user.phoneNumber.includes(searchTerm)) ||
+            (user.district &&
+              user.district.toLowerCase().includes(searchLower)) ||
+            (user.state && user.state.toLowerCase().includes(searchLower))
           );
         });
-        setFilteredGirls(filtered);
+        setFilteredUsers(filtered);
       }
     } catch (err) {
       console.error('Error in search filter:', err);
-      setFilteredGirls([]);
+      setFilteredUsers([]);
     }
-  }, [searchTerm, girls]);
+  }, [searchTerm, users]);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -114,39 +123,39 @@ const RamaniGirlList = () => {
     }, 3000);
   };
 
-  // Handle girl selection
-  const handleGirlSelect = (girl) => {
-    setSelectedGirl(girl);
-    setShowGirlDetails(true);
+  // Handle user selection
+  const handleUserSelect = (user) => {
+    setSelectedUser(user);
+    setShowUserDetails(true);
   };
 
-  // Handle girl deletion
-  const handleDeleteGirl = async (girlId) => {
-    if (!window.confirm('Are you sure you want to delete this record?')) return;
+  // Handle user deletion
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
 
     try {
-      await axiosInstance.delete(`/girl/${girlId}`);
+      await axiosInstance.delete(`/form/${userId}`);
 
       // Update state optimistically
-      setGirls((prev) => prev.filter((girl) => girl._id !== girlId));
-      setFilteredGirls((prev) => prev.filter((girl) => girl._id !== girlId));
+      setUsers((prev) => prev.filter((user) => user._id !== userId));
+      setFilteredUsers((prev) => prev.filter((user) => user._id !== userId));
 
       // Clear selection if needed
-      if (selectedGirl && selectedGirl._id === girlId) {
-        setSelectedGirl(null);
-        setShowGirlDetails(false);
+      if (selectedUser && selectedUser._id === userId) {
+        setSelectedUser(null);
+        setShowUserDetails(false);
       }
 
-      showNotification('Record deleted successfully');
+      showNotification('User deleted successfully');
     } catch (error) {
-      toast.error('Failed to delete record');
+      toast.error('Failed to delete user');
       console.error('Delete Error:', error.response?.data || error.message);
     }
   };
 
-  // Handle girl edit
-  const handleEditGirl = (girlId) => {
-    console.log('Edit girl with ID:', girlId);
+  // Handle user edit
+  const handleEditUser = (userId) => {
+    console.log('Edit user with ID:', userId);
     // Navigate to edit page or open edit modal
   };
 
@@ -157,15 +166,16 @@ const RamaniGirlList = () => {
     setTimeout(() => {
       try {
         const csv = Papa.unparse(
-          filteredGirls.map((girl) => ({
-            Name: girl.girlName || '',
-            "Father's Name": girl.girlFatherName || '',
-            "Mother's Name": girl.girlMotherName || '',
-            Mobile: girl.mobileNumber || '',
-            District: girl.district || '',
-            State: girl.state || '',
-            'Already Married': girl.isAlreadyMarried || '',
-            DOB: girl.girlDOB || '',
+          filteredUsers.map((user) => ({
+            Name: user.fullName || '',
+            Email: user.emailAddress || '',
+            Phone: user.phoneNumber || '',
+            'Job Type': user.jobType || '',
+            'Business Type': user.businessType || '',
+            District: user.district || '',
+            State: user.state || '',
+            Taluk: user.taluk || '',
+            'Job Description': user.jobDescription || '',
           }))
         );
 
@@ -176,7 +186,7 @@ const RamaniGirlList = () => {
         link.setAttribute('href', url);
         link.setAttribute(
           'download',
-          `ramani_girls_${new Date().toISOString().split('T')[0]}.csv`
+          `registrations_${new Date().toISOString().split('T')[0]}.csv`
         );
         link.style.visibility = 'hidden';
 
@@ -194,6 +204,53 @@ const RamaniGirlList = () => {
     }, 1000);
   };
 
+  // Handle CSV file change
+  const handleFileChange = (e) => {
+    setCsvFile(e.target.files[0]);
+  };
+
+  // Import CSV
+  const handleImportCSV = async () => {
+    if (!csvFile) {
+      toast.error('Please select a CSV file');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('file', csvFile);
+
+      const response = await axiosInstance.post('/form/import/csv', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // Refresh user list
+      const updatedResponse = await axiosInstance.get('/form');
+      const usersArray = Array.isArray(updatedResponse.data)
+        ? updatedResponse.data
+        : Array.isArray(updatedResponse.data?.data)
+        ? updatedResponse.data.data
+        : [];
+
+      setUsers(usersArray);
+      setFilteredUsers(usersArray);
+
+      showNotification(
+        `Successfully imported ${response.data.insertedCount} users`
+      );
+      setShowImportModal(false);
+      setCsvFile(null);
+    } catch (err) {
+      console.error('Import error:', err);
+      toast.error(err.response?.data?.error || 'Failed to import CSV');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Format date
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -207,49 +264,7 @@ const RamaniGirlList = () => {
 
   // Close details panel
   const closeDetailsPanel = () => {
-    setShowGirlDetails(false);
-  };
-
-  // Calculate age from DOB
-  const calculateAge = (dob) => {
-    if (!dob) return 'N/A';
-
-    try {
-      // Parse the date string - handle different formats
-      const birthDate = new Date(dob);
-
-      // Check if date is valid
-      if (isNaN(birthDate.getTime())) {
-        // If the string is a direct age value (common form submission issue)
-        if (!isNaN(parseInt(dob))) {
-          return parseInt(dob);
-        }
-        return 'N/A';
-      }
-
-      const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-
-      // Adjust age if birthday hasn't occurred yet this year
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      if (
-        monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < birthDate.getDate())
-      ) {
-        age--;
-      }
-
-      // Double-check for unreasonably high or negative ages
-      return age < 0 || age > 120 ? 'N/A' : age;
-    } catch (error) {
-      console.error('Error calculating age:', error);
-
-      // If the string is a direct age value (common form submission issue)
-      if (!isNaN(parseInt(dob))) {
-        return parseInt(dob);
-      }
-      return 'N/A';
-    }
+    setShowUserDetails(false);
   };
 
   return (
@@ -262,7 +277,7 @@ const RamaniGirlList = () => {
         className="h-20 bg-[#1e0d24] border-b border-purple-800/30 flex items-center justify-between px-6"
       >
         <h2 className="text-xl font-semibold text-amber-100">
-          Ramani Girls Management
+          User Management
         </h2>
 
         <div className="flex items-center gap-4">
@@ -273,7 +288,7 @@ const RamaniGirlList = () => {
             />
             <input
               type="text"
-              placeholder="Search girls..."
+              placeholder="Search users..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 bg-[#2a1533] text-amber-50 border border-purple-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400/50"
@@ -307,6 +322,22 @@ const RamaniGirlList = () => {
 
       {/* Main area */}
       <main className="flex-1 p-6 overflow-auto flex flex-col min-h-[calc(100vh-5rem)]">
+        {/* Welcome Banner */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="mb-6 bg-gradient-to-r from-purple-900/30 to-amber-900/30 rounded-lg p-6 border border-amber-500/20"
+        >
+          <h1 className="text-2xl font-bold text-amber-200 mb-2">
+            Welcome to Admin Dashboard
+          </h1>
+          <p className="text-amber-100">
+            Manage users, view analytics, and administer your platform from this
+            central hub.
+          </p>
+        </motion.div>
+
         {/* Action buttons */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
@@ -316,27 +347,26 @@ const RamaniGirlList = () => {
         >
           <div>
             <h3 className="text-lg font-medium text-amber-100">
-              {filteredGirls?.length} Ramani Girls{' '}
-              {searchTerm && `(filtered from ${girls.length})`}
+              {filteredUsers?.length} Users{' '}
+              {searchTerm && `(filtered from ${users.length})`}
             </h3>
             <div className="flex mt-2 gap-4">
               <div className="px-3 py-1 bg-[#2a1533] rounded-lg text-center border border-purple-700/50">
-                <span className="text-sm text-purple-300">Not Married:</span>{' '}
+                <span className="text-sm text-purple-300">Business:</span>{' '}
                 <span className="text-green-400 font-medium">
                   {
-                    filteredGirls.filter(
-                      (girl) => girl?.isAlreadyMarried === 'No'
+                    filteredUsers.filter(
+                      (user) => user?.businessType === 'Business'
                     ).length
                   }
                 </span>
               </div>
               <div className="px-3 py-1 bg-[#2a1533] rounded-lg text-center border border-purple-700/50">
-                <span className="text-sm text-purple-300">Married:</span>{' '}
+                <span className="text-sm text-purple-300">Job:</span>{' '}
                 <span className="text-amber-400 font-medium">
                   {
-                    filteredGirls.filter(
-                      (girl) => girl?.isAlreadyMarried === 'Yes'
-                    ).length
+                    filteredUsers.filter((user) => user?.jobType === 'Job')
+                      .length
                   }
                 </span>
               </div>
@@ -345,8 +375,15 @@ const RamaniGirlList = () => {
 
           <div className="flex gap-3">
             <button
+              onClick={() => setShowImportModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-amber-100 font-medium rounded-lg transition-colors"
+            >
+              <Upload size={18} />
+              <span>Import CSV</span>
+            </button>
+            <button
               onClick={exportToCSV}
-              disabled={loading || filteredGirls.length === 0}
+              disabled={loading || filteredUsers.length === 0}
               className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-[#1e0d24] font-medium rounded-lg transition-colors disabled:opacity-50"
             >
               {loading ? (
@@ -382,12 +419,12 @@ const RamaniGirlList = () => {
           <div className="flex-1 flex justify-center items-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-400 mb-4"></div>
-              <p className="text-amber-200">Loading girls data...</p>
+              <p className="text-amber-200">Loading user data...</p>
             </div>
           </div>
         )}
 
-        {/* Girl list */}
+        {/* User list */}
         {!loading && !error && (
           <div className="flex-1">
             {viewMode === 'grid' ? (
@@ -397,38 +434,38 @@ const RamaniGirlList = () => {
                 transition={{ duration: 0.5, delay: 0.3 }}
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
               >
-                {currentGirls.length === 0 ? (
+                {currentUsers.length === 0 ? (
                   <div className="col-span-full py-12 text-center">
                     <h3 className="text-lg font-medium text-amber-200 mb-2">
-                      {searchTerm ? 'No results found' : 'No girls registered'}
+                      {searchTerm ? 'No results found' : 'No users registered'}
                     </h3>
                     <p className="text-amber-100/70">
                       {searchTerm
                         ? `No records match your search for "${searchTerm}"`
-                        : 'There are no Ramani girls registered yet.'}
+                        : 'There are no users registered yet.'}
                     </p>
                   </div>
                 ) : (
-                  currentGirls.map((girl) => (
+                  currentUsers.map((user) => (
                     <motion.div
-                      key={girl._id || girl.createdAt}
+                      key={user._id || user.createdAt}
                       whileHover={{ scale: 1.02 }}
                       className="bg-gradient-to-br from-[#1e0d24] to-[#3a1d44] rounded-lg shadow-md overflow-hidden border border-purple-700/30"
                     >
                       <div className="p-5">
                         <div className="flex justify-between items-start mb-3">
                           <h4 className="text-lg font-medium text-amber-200 truncate">
-                            {girl.girlName}
+                            {user.fullName}
                           </h4>
                           <div className="flex gap-2">
                             <button
-                              onClick={() => handleEditGirl(girl._id)}
+                              onClick={() => handleEditUser(user._id)}
                               className="text-amber-400 hover:text-amber-300 transition-colors"
                             >
                               <Edit size={18} />
                             </button>
                             <button
-                              onClick={() => handleDeleteGirl(girl._id)}
+                              onClick={() => handleDeleteUser(user._id)}
                               className="text-red-400 hover:text-red-300 transition-colors"
                             >
                               <Trash2 size={18} />
@@ -438,47 +475,41 @@ const RamaniGirlList = () => {
 
                         <div className="text-amber-100/80 space-y-2">
                           <p className="flex items-center gap-2">
-                            <span className="text-purple-300">Father:</span>
+                            <span className="text-purple-300">Email:</span>
                             <span className="text-amber-100 truncate">
-                              {girl.girlFatherName || 'N/A'}
-                            </span>
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <span className="text-purple-300">Age:</span>
-                            <span className="text-amber-100">
-                              {calculateAge(girl.girlDOB)} years
+                              {user.emailAddress || 'N/A'}
                             </span>
                           </p>
                           <p className="flex items-center gap-2">
                             <span className="text-purple-300">Phone:</span>
                             <span className="text-amber-100">
-                              {girl.mobileNumber || 'N/A'}
+                              {user.phoneNumber || 'N/A'}
                             </span>
                           </p>
                           <p className="flex items-center gap-2">
-                            <span className="text-purple-300">Status:</span>
+                            <span className="text-purple-300">Type:</span>
                             <span
                               className={`text-amber-100 px-2 py-0.5 rounded-full text-xs ${
-                                girl.isAlreadyMarried === 'No'
-                                  ? 'bg-green-500/20 text-green-300'
-                                  : 'bg-amber-500/20 text-amber-300'
+                                user.jobType === 'Job'
+                                  ? 'bg-blue-500/20 text-blue-300'
+                                  : 'bg-green-500/20 text-green-300'
                               }`}
                             >
-                              {girl.isAlreadyMarried || 'N/A'}
+                              {user.jobType || user.businessType || 'N/A'}
                             </span>
                           </p>
                           <p className="flex items-center gap-2">
                             <span className="text-purple-300">Location:</span>
                             <span className="text-amber-100 truncate">
-                              {girl.district
-                                ? `${girl.district}, ${girl.state || ''}`
+                              {user.district
+                                ? `${user.district}, ${user.state || ''}`
                                 : 'N/A'}
                             </span>
                           </p>
                         </div>
 
                         <button
-                          onClick={() => handleGirlSelect(girl)}
+                          onClick={() => handleUserSelect(user)}
                           className="mt-4 text-sm text-amber-400 hover:text-amber-300 transition-colors"
                         >
                           View Details
@@ -495,15 +526,15 @@ const RamaniGirlList = () => {
                 transition={{ duration: 0.5, delay: 0.3 }}
                 className="bg-gradient-to-br from-[#1e0d24] to-[#3a1d44] rounded-lg shadow-lg overflow-hidden border border-purple-700/30"
               >
-                {currentGirls.length === 0 ? (
+                {currentUsers.length === 0 ? (
                   <div className="py-12 text-center">
                     <h3 className="text-lg font-medium text-amber-200 mb-2">
-                      {searchTerm ? 'No results found' : 'No girls registered'}
+                      {searchTerm ? 'No results found' : 'No users registered'}
                     </h3>
                     <p className="text-amber-100/70">
                       {searchTerm
                         ? `No records match your search for "${searchTerm}"`
-                        : 'There are no Ramani girls registered yet.'}
+                        : 'There are no users registered yet.'}
                     </p>
                   </div>
                 ) : (
@@ -512,69 +543,63 @@ const RamaniGirlList = () => {
                       <thead className="bg-purple-900/30 text-amber-200 border-b border-purple-700/50">
                         <tr>
                           <th className="px-6 py-4 font-medium">Name</th>
-                          <th className="px-6 py-4 font-medium">
-                            Father's Name
-                          </th>
-                          <th className="px-6 py-4 font-medium">Age</th>
+                          <th className="px-6 py-4 font-medium">Email</th>
                           <th className="px-6 py-4 font-medium">Phone</th>
+                          <th className="px-6 py-4 font-medium">Type</th>
                           <th className="px-6 py-4 font-medium">Location</th>
-                          <th className="px-6 py-4 font-medium">Status</th>
                           <th className="px-6 py-4 font-medium">Actions</th>
                         </tr>
                       </thead>
 
                       <tbody>
-                        {currentGirls.map((girl, index) => (
+                        {currentUsers.map((user, index) => (
                           <tr
-                            key={girl._id || index}
+                            key={user._id || index}
                             className={`hover:bg-purple-900/20 ${
                               index % 2 === 0 ? 'bg-purple-900/10' : ''
                             }`}
                           >
                             <td className="px-6 py-4 font-medium text-amber-100">
-                              {girl.girlName}
+                              {user.fullName}
                             </td>
                             <td className="px-6 py-4 text-amber-100/80">
-                              {girl.girlFatherName || 'N/A'}
+                              {user.emailAddress || 'N/A'}
                             </td>
                             <td className="px-6 py-4 text-amber-100/80">
-                              {calculateAge(girl.girlDOB)} years
-                            </td>
-                            <td className="px-6 py-4 text-amber-100/80">
-                              {girl.mobileNumber || 'N/A'}
-                            </td>
-                            <td className="px-6 py-4 text-amber-100/80">
-                              {girl.district
-                                ? `${girl.district}, ${girl.state || ''}`
-                                : 'N/A'}
+                              {user.phoneNumber || 'N/A'}
                             </td>
                             <td className="px-6 py-4">
                               <span
                                 className={`px-2 py-1 rounded-full text-xs ${
-                                  girl.isAlreadyMarried === 'No'
-                                    ? 'bg-green-500/20 text-green-300'
-                                    : 'bg-amber-500/20 text-amber-300'
+                                  user.jobType === 'Job'
+                                    ? 'bg-blue-500/20 text-blue-300'
+                                    : 'bg-green-500/20 text-green-300'
                                 }`}
                               >
-                                {girl.isAlreadyMarried || 'N/A'}
+                                {user.jobType || user.businessType || 'N/A'}
                               </span>
+                            </td>
+                            <td className="px-6 py-4 text-amber-100/80">
+                              {user.district
+                                ? `${user.district}, ${user.state || ''}`
+                                : 'N/A'}
                             </td>
                             <td className="px-6 py-4">
                               <div className="flex gap-3">
                                 <button
-                                  onClick={() => handleGirlSelect(girl)}
+                                  onClick={() => handleUserSelect(user)}
                                   className="text-amber-400 hover:text-amber-300 transition-colors"
                                 >
                                   View
                                 </button>
                                 <button
-                                  onClick={() => handleEditGirl(girl._id)}
+                                  onClick={() => handleEditUser(user._id)}
                                   className="text-blue-400 hover:text-blue-300 transition-colors"
                                 >
                                   Edit
                                 </button>
                                 <button
-                                  onClick={() => handleDeleteGirl(girl._id)}
+                                  onClick={() => handleDeleteUser(user._id)}
                                   className="text-red-400 hover:text-red-300 transition-colors"
                                 >
                                   Delete
@@ -661,8 +686,8 @@ const RamaniGirlList = () => {
         )}
       </main>
 
-      {/* Girl details sidebar */}
-      {showGirlDetails && selectedGirl && (
+      {/* User details sidebar */}
+      {showUserDetails && selectedUser && (
         <motion.div
           initial={{ x: 100, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
@@ -671,7 +696,7 @@ const RamaniGirlList = () => {
         >
           <div className="h-20 flex items-center justify-between px-6 border-b border-purple-800/30">
             <h3 className="text-xl font-semibold text-amber-200">
-              Girl Details
+              User Details
             </h3>
             <button
               onClick={closeDetailsPanel}
@@ -691,37 +716,19 @@ const RamaniGirlList = () => {
                   <div>
                     <p className="text-sm text-purple-300">Full Name</p>
                     <p className="text-amber-100">
-                      {selectedGirl.girlName || 'N/A'}
+                      {selectedUser.fullName || 'N/A'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-purple-300">Father's Name</p>
+                    <p className="text-sm text-purple-300">Email Address</p>
                     <p className="text-amber-100">
-                      {selectedGirl.girlFatherName || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-purple-300">Mother's Name</p>
-                    <p className="text-amber-100">
-                      {selectedGirl.girlMotherName || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-purple-300">Date of Birth</p>
-                    <p className="text-amber-100">
-                      {formatDate(selectedGirl.girlDOB)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-purple-300">Age</p>
-                    <p className="text-amber-100">
-                      {calculateAge(selectedGirl.girlDOB)} years
+                      {selectedUser.emailAddress || 'N/A'}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-purple-300">Phone Number</p>
                     <p className="text-amber-100">
-                      {selectedGirl.mobileNumber || 'N/A'}
+                      {selectedUser.phoneNumber || 'N/A'}
                     </p>
                   </div>
                 </div>
@@ -729,179 +736,56 @@ const RamaniGirlList = () => {
 
               <div className="space-y-2">
                 <h4 className="text-lg font-medium text-amber-300">
-                  Address Information
+                  Job/Business Information
                 </h4>
                 <div className="bg-purple-900/20 p-4 rounded-lg space-y-3">
                   <div>
-                    <p className="text-sm text-purple-300">Full Address</p>
+                    <p className="text-sm text-purple-300">Type</p>
                     <p className="text-amber-100">
-                      {selectedGirl.fullAddress || 'N/A'}
+                      {selectedUser.jobType ||
+                        selectedUser.businessType ||
+                        'N/A'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-purple-300">Tehsil</p>
+                    <p className="text-sm text-purple-300">Description</p>
                     <p className="text-amber-100">
-                      {selectedGirl.tehsil || 'N/A'}
+                      {selectedUser.jobDescription || 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="text-lg font-medium text-amber-300">
+                  Location Information
+                </h4>
+                <div className="bg-purple-900/20 p-4 rounded-lg space-y-3">
+                  <div>
+                    <p className="text-sm text-purple-300">State</p>
+                    <p className="text-amber-100">
+                      {selectedUser.state || 'N/A'}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-purple-300">District</p>
                     <p className="text-amber-100">
-                      {selectedGirl.district || 'N/A'}
+                      {selectedUser.district || 'N/A'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-purple-300">State</p>
+                    <p className="text-sm text-purple-300">Taluk</p>
                     <p className="text-amber-100">
-                      {selectedGirl.state || 'N/A'}
+                      {selectedUser.taluk || 'N/A'}
                     </p>
                   </div>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <h4 className="text-lg font-medium text-amber-300">
-                  Marriage Information
-                </h4>
-                <div className="bg-purple-900/20 p-4 rounded-lg space-y-3">
-                  <div>
-                    <p className="text-sm text-purple-300">Already Married</p>
-                    <p
-                      className={`text-amber-100 ${
-                        selectedGirl.isAlreadyMarried === 'No'
-                          ? 'text-green-400'
-                          : selectedGirl.isAlreadyMarried === 'Yes'
-                          ? 'text-amber-400'
-                          : ''
-                      }`}
-                    >
-                      {selectedGirl.isAlreadyMarried || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-purple-300">Wants to Marry</p>
-                    <p className="text-amber-100">
-                      {selectedGirl.wantToMarry || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-purple-300">Preferred State</p>
-                    <p className="text-amber-100">
-                      {selectedGirl.wantToMarryState || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-purple-300">Child Name</p>
-                    <p className="text-amber-100">
-                      {selectedGirl.childName || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-purple-300">Child From</p>
-                    <p className="text-amber-100">
-                      {selectedGirl.childFrom
-                        ? `${selectedGirl.childFrom}${
-                            selectedGirl.childDistrict
-                              ? ', ' + selectedGirl.childDistrict
-                              : ''
-                          }`
-                        : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="text-lg font-medium text-amber-300">
-                  Ramaini Information
-                </h4>
-                <div className="bg-purple-900/20 p-4 rounded-lg space-y-3">
-                  <div>
-                    <p className="text-sm text-purple-300">Serial No</p>
-                    <p className="text-amber-100">
-                      {selectedGirl.ramainSiriNo || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-purple-300">Location</p>
-                    <p className="text-amber-100">
-                      {selectedGirl.location || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-purple-300">Date of Ramaini</p>
-                    <p className="text-amber-100">
-                      {formatDate(selectedGirl.dateOfRamaini)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {(selectedGirl.girlPhoto ||
-                selectedGirl.boyPhoto ||
-                selectedGirl.girlSignature ||
-                selectedGirl.familySignature) && (
-                <div className="space-y-2">
-                  <h4 className="text-lg font-medium text-amber-300">
-                    Documents
-                  </h4>
-                  <div className="bg-purple-900/20 p-4 rounded-lg grid grid-cols-2 gap-3">
-                    {selectedGirl.girlPhoto && (
-                      <a
-                        href={selectedGirl.girlPhoto}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-purple-900/30 p-3 rounded-lg text-center hover:bg-purple-900/40 transition-colors"
-                      >
-                        <span className="text-amber-300 text-sm">
-                          Girl Photo
-                        </span>
-                      </a>
-                    )}
-                    {selectedGirl.boyPhoto && (
-                      <a
-                        href={selectedGirl.boyPhoto}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-purple-900/30 p-3 rounded-lg text-center hover:bg-purple-900/40 transition-colors"
-                      >
-                        <span className="text-amber-300 text-sm">
-                          Boy Photo
-                        </span>
-                      </a>
-                    )}
-                    {selectedGirl.girlSignature && (
-                      <a
-                        href={selectedGirl.girlSignature}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-purple-900/30 p-3 rounded-lg text-center hover:bg-purple-900/40 transition-colors"
-                      >
-                        <span className="text-amber-300 text-sm">
-                          Girl Signature
-                        </span>
-                      </a>
-                    )}
-                    {selectedGirl.familySignature && (
-                      <a
-                        href={selectedGirl.familySignature}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-purple-900/30 p-3 rounded-lg text-center hover:bg-purple-900/40 transition-colors"
-                      >
-                        <span className="text-amber-300 text-sm">
-                          Family Signature
-                        </span>
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
 
               <div className="text-sm text-gray-400 border-t border-purple-700/30 pt-4 mt-6">
                 <div className="flex justify-between">
-                  <span>Created: {formatDate(selectedGirl.createdAt)}</span>
-                  <span>Updated: {formatDate(selectedGirl.updatedAt)}</span>
+                  <span>Created: {formatDate(selectedUser.createdAt)}</span>
+                  <span>Updated: {formatDate(selectedUser.updatedAt)}</span>
                 </div>
               </div>
             </div>
@@ -911,12 +795,12 @@ const RamaniGirlList = () => {
             <div className="flex gap-4">
               <button
                 className="flex-1 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-[#1e0d24] font-medium rounded-lg transition-colors"
-                onClick={() => handleEditGirl(selectedGirl._id)}
+                onClick={() => handleEditUser(selectedUser._id)}
               >
-                Edit Girl
+                Edit User
               </button>
               <button
-                onClick={() => handleDeleteGirl(selectedGirl._id)}
+                onClick={() => handleDeleteUser(selectedUser._id)}
                 className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-lg transition-colors"
               >
                 Delete
@@ -924,6 +808,73 @@ const RamaniGirlList = () => {
             </div>
           </div>
         </motion.div>
+      )}
+
+      {/* Import CSV Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-20">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-gradient-to-br from-[#1e0d24] to-[#3a1d44] rounded-lg p-6 max-w-md w-full mx-4"
+          >
+            <h3 className="text-xl font-semibold text-amber-200 mb-4">
+              Import Users from CSV
+            </h3>
+
+            <div className="mb-6">
+              <p className="text-amber-100 mb-4">
+                Upload a CSV file with the following columns: fullName,
+                phoneNumber, emailAddress, jobType, businessType, state,
+                district, taluk, jobDescription
+              </p>
+
+              <label className="block w-full p-4 border-2 border-dashed border-purple-500/50 rounded-lg text-center cursor-pointer hover:bg-purple-900/20 transition-colors">
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <Upload size={32} className="mx-auto mb-2 text-purple-400" />
+                <span className="text-amber-200 block mb-1">
+                  {csvFile ? csvFile.name : 'Choose CSV file'}
+                </span>
+                <span className="text-purple-300 text-sm">
+                  {csvFile
+                    ? `${(csvFile.size / 1024).toFixed(2)} KB`
+                    : 'Click to browse'}
+                </span>
+              </label>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={handleImportCSV}
+                disabled={!csvFile || loading}
+                className="flex-1 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-[#1e0d24] font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-transparent border-t-[#1e0d24] rounded-full animate-spin"></div>
+                    <span>Importing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={18} />
+                    <span>Import Data</span>
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setShowImportModal(false)}
+                className="px-4 py-2 bg-purple-900/30 hover:bg-purple-900/40 text-purple-200 border border-purple-700/30 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </motion.div>
+        </div>
       )}
 
       {/* Notification */}
@@ -945,4 +896,4 @@ const RamaniGirlList = () => {
   );
 };
 
-export default RamaniGirlList;
+export default AdminUserList;

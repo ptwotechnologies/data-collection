@@ -11,6 +11,7 @@ import {
   StyleSheet,
 } from '@react-pdf/renderer';
 import MarriageCertificate from './MarriageCertificate';
+import axiosInstance from './context/axiosInstance';
 
 // Main Component
 export default function DownloadCertificate() {
@@ -33,11 +34,9 @@ export default function DownloadCertificate() {
       setLoading(true);
       setError('');
 
-      // Fetch boy data
-      const boyResponse = await axios
-        .get(
-          `https://data-collection-mig2.onrender.com/api/boy/search?mobileNumber=${boyPhone}`
-        )
+      // Fetch boy data using axiosInstance
+      const boyResponse = await axiosInstance
+        .get(`/boy/search?mobileNumber=${boyPhone}`)
         .catch((err) => {
           throw new Error(
             `Boy data error: ${err.response?.data?.message || err.message}`
@@ -49,11 +48,9 @@ export default function DownloadCertificate() {
         throw new Error('Boy data not found in the system');
       }
 
-      // Fetch girl data
-      const girlResponse = await axios
-        .get(
-          `https://data-collection-mig2.onrender.com/api/girl/search?mobileNumber=${girlPhone}`
-        )
+      // Fetch girl data using axiosInstance
+      const girlResponse = await axiosInstance
+        .get(`/girl/search?mobileNumber=${girlPhone}`)
         .catch((err) => {
           throw new Error(
             `Girl data error: ${err.response?.data?.message || err.message}`

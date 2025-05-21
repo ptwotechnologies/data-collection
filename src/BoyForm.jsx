@@ -2,16 +2,19 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
+import axiosInstance from './context/axiosInstance';
 import Header from './Header';
-import i18n from './constants/boyLng';
+import i18n from './constants/trans';
 import formSchema from './schema/boySchema';
 import InputField from './components/InputField';
 import FileUpload from './components/FileUpload';
 import RadioQuestion from './components/RadioQuestion';
+import DocumentUpload from './components/DocumentUpload';
 
 export default function RamainiForm() {
   const { t } = useTranslation();
+  const { t: commonT } = useTranslation('common');
+  const { t: boyT } = useTranslation('boy');
   const [language, setLanguage] = useState('en');
   const [girlPhoto, setGirlPhoto] = useState({ file: null, preview: null });
   const [boyPhoto, setBoyPhoto] = useState({ file: null, preview: null });
@@ -20,6 +23,16 @@ export default function RamainiForm() {
     preview: null,
   });
   const [familySignature, setFamilySignature] = useState({
+    file: null,
+    preview: null,
+  });
+  const [divorceCertificate, setDivorceCertificate] = useState({
+    file: null,
+    preview: null,
+  });
+  const [aadharCard, setAadharCard] = useState({ file: null, preview: null });
+  const [marksheet, setMarksheet] = useState({ file: null, preview: null });
+  const [namdikashaForm, setNamdikashaForm] = useState({
     file: null,
     preview: null,
   });
@@ -48,6 +61,8 @@ export default function RamainiForm() {
 
   // Watch form values for auto-filling declaration
   const watchedValues = watch();
+
+  const isAlreadyMarried = watch('isAlreadyMarried');
 
   const toggleLanguage = () => {
     const newLang = language === 'en' ? 'hi' : 'en';
@@ -101,10 +116,47 @@ I also declare that the above information given by me is true, complete and corr
     event.preventDefault();
     console.log('Form submission started');
 
-    // Trigger validation
-    const isValid = await trigger();
-    if (!isValid) {
-      console.log('Form validation failed:', errors);
+    // Validate required file uploads
+    if (!aadharCard.file || !marksheet.file) {
+      alert('Please upload all required documents before submitting.');
+      return;
+    }
+
+    // Only validate divorce certificate if the person is already married
+    if (watchedValues.isAlreadyMarried === 'Yes' && !divorceCertificate.file) {
+      alert('Please upload divorce certificate before submitting.');
+      return;
+    }
+
+    // Trigger validation without using await trigger()
+    // Just check the form fields directly
+    const formValues = getValues();
+    const requiredFields = [
+      'boyName',
+      'boyFatherName',
+      'boyMotherName',
+      'boyDOB',
+      'boyAge',
+      'fullAddress',
+      'tehsil',
+      'district',
+      'state',
+      'mobileNumber',
+      'declarantSon',
+      'childFrom',
+      'ramainSiriNo',
+      'location',
+      'dateOfRamaini',
+      'isAdult',
+      'isDowryFree',
+      'agreeWithRules',
+      'isAlreadyMarried',
+    ];
+
+    const missingFields = requiredFields.filter((field) => !formValues[field]);
+    if (missingFields.length > 0) {
+      console.log('Missing required fields:', missingFields);
+      alert(`Please fill in all required fields: ${missingFields.join(', ')}`);
       return;
     }
 
@@ -121,9 +173,21 @@ I also declare that the above information given by me is true, complete and corr
       // Create FormData object
       const formData = new FormData();
 
-      // Get form values from react-hook-form
-      const formValues = getValues();
-      console.log('Form values from react-hook-form:', formValues);
+      // Add photos
+      if (girlPhoto.file) formData.append('girlPhoto', girlPhoto.file);
+      if (boyPhoto.file) formData.append('boyPhoto', boyPhoto.file);
+      if (boySignature.file) formData.append('boySignature', boySignature.file);
+      if (familySignature.file)
+        formData.append('familySignature', familySignature.file);
+
+      // Add documents
+      if (aadharCard.file) formData.append('aadharCard', aadharCard.file);
+      if (marksheet.file) formData.append('marksheet', marksheet.file);
+      if (namdikashaForm.file)
+        formData.append('namdikashaForm', namdikashaForm.file);
+      if (watchedValues.isAlreadyMarried === 'Yes' && divorceCertificate.file) {
+        formData.append('divorceCertificate', divorceCertificate.file);
+      }
 
       // Add all form fields to FormData
       Object.keys(formValues).forEach((key) => {
@@ -139,50 +203,29 @@ I also declare that the above information given by me is true, complete and corr
       // Add the generated declaration
       formData.append('generatedDeclaration', generatedDeclaration);
 
-      // Add file uploads
-      if (girlPhoto.file) {
-        formData.append('girlPhoto', girlPhoto.file);
-        console.log('Girl photo added:', girlPhoto.file.name);
-      }
-      if (boyPhoto.file) {
-        formData.append('boyPhoto', boyPhoto.file);
-        console.log('Boy photo added:', boyPhoto.file.name);
-      }
-      if (boySignature.file) {
-        formData.append('boySignature', boySignature.file);
-        console.log('Boy signature added:', boySignature.file.name);
-      }
-      if (familySignature.file) {
-        formData.append('familySignature', familySignature.file);
-        console.log('Family signature added:', familySignature.file.name);
-      }
-
       // Log what's being sent (for debugging)
       console.log('FormData contents:');
       for (let [key, value] of formData.entries()) {
-        console.log(key, value);
+        console.log(
+          key,
+          typeof value === 'object' ? 'File: ' + value.name : value
+        );
       }
 
       // Submit to API
       console.log('Submitting to API...');
-      const response = await axios.post(
-        'https://data-collection-mig2.onrender.com/api/boy/submit',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          timeout: 30000, // 30 second timeout
-        }
-      );
+      const response = await axiosInstance.post('/boy/submit', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        timeout: 30000,
+      });
 
       console.log('API Response:', response);
 
       if (response.status === 200 || response.status === 201) {
         setSubmitStatus('success');
         console.log('Form submitted successfully');
-        // Optionally reset form or redirect
-        // reset(); // Uncomment if you want to reset the form
       }
     } catch (error) {
       console.error('Detailed submission error:', {
@@ -276,37 +319,25 @@ I also declare that the above information given by me is true, complete and corr
             <div className="text-center w-full sm:w-auto">
               <div className="bg-red-600 text-white py-2 px-4 rounded-lg inline-block mb-2">
                 <div className="text-base sm:text-lg font-bold">
-                  {t('subtitle')}
+                  {commonT('subtitle')}
                 </div>
               </div>
               <h1 className="text-lg sm:text-xl font-bold text-gray-800">
-                {t('title')}
+                {commonT('title')}
               </h1>
               <h2 className="text-md font-medium text-gray-700 mt-1">
-                Boy's family information
+                {commonT('boyFamilyInfo')}
               </h2>
             </div>
             <button
               onClick={toggleLanguage}
               className="bg-red-100 text-red-800 px-3 py-2 rounded-md text-sm font-medium hover:bg-red-200 w-full sm:w-auto mt-2 sm:mt-0"
             >
-              {t('toggleLanguage')}
+              {commonT('toggleLanguage')}
             </button>
           </div>
 
           <form onSubmit={handleFormSubmit} className="space-y-6">
-            {/* Success/Error Message at top */}
-            {submitStatus === 'success' && (
-              <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-                {t('success')}
-              </div>
-            )}
-            {submitStatus === 'error' && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                {t('error')}
-              </div>
-            )}
-
             {/* Photo Upload Section */}
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <div className="sm:w-1/2">
@@ -412,41 +443,46 @@ I also declare that the above information given by me is true, complete and corr
             {/* Personal Information */}
             <div className="bg-red-50 p-4 rounded-lg mb-6">
               <h2 className="text-lg font-medium text-red-800 mb-3">
-                {t('personalInfo')}
+                {commonT('personalInfo')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputField
-                  label="boyName"
+                  label="name"
                   name="boyName"
                   register={register}
                   errors={errors}
+                  formType="boy"
                 />
                 <InputField
-                  label="boyFatherName"
+                  label="fatherName"
                   name="boyFatherName"
                   register={register}
                   errors={errors}
+                  formType="boy"
                 />
                 <InputField
-                  label="boyMotherName"
+                  label="motherName"
                   name="boyMotherName"
                   register={register}
                   errors={errors}
+                  formType="boy"
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <InputField
-                    label="boyDOB"
+                    label="dob"
                     name="boyDOB"
                     type="date"
                     register={register}
                     errors={errors}
+                    formType="boy"
                   />
                   <InputField
-                    label="boyAge"
+                    label="age"
                     name="boyAge"
                     type="number"
                     register={register}
                     errors={errors}
+                    formType="boy"
                   />
                 </div>
               </div>
@@ -455,7 +491,7 @@ I also declare that the above information given by me is true, complete and corr
             {/* Contact Information */}
             <div className="bg-red-50 p-4 rounded-lg mb-6">
               <h2 className="text-lg font-medium text-red-800 mb-3">
-                {t('contactInfo')}
+                {commonT('contactInfo')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputField
@@ -488,13 +524,20 @@ I also declare that the above information given by me is true, complete and corr
                   register={register}
                   errors={errors}
                 />
+                <InputField
+                  label="girlMobileNumber"
+                  name="girlmobileNumber"
+                  register={register}
+                  errors={errors}
+                  formType="boy"
+                />
               </div>
             </div>
 
             {/* Religious Information */}
             <div className="bg-red-50 p-4 rounded-lg mb-6">
               <h2 className="text-lg font-medium text-red-800 mb-3">
-                {t('religiousInfo')}
+                {commonT('religiousInfo')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputField
@@ -535,21 +578,21 @@ I also declare that the above information given by me is true, complete and corr
             {/* Declaration Section */}
             <div className="bg-red-50 p-4 rounded-lg mb-6">
               <h2 className="text-lg font-medium text-red-800 mb-3">
-                Declaration Details
+                {commonT('declarationDetails')}
               </h2>
               {!isDeclared ? (
                 <>
                   <div className="grid grid-cols-1 gap-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <InputField
-                        label="Declarant Son/Daughter of"
+                        label={commonT('declarantSon')}
                         name="declarantSon"
                         register={register}
                         errors={errors}
                         placeholder="Enter grandfather's name"
                       />
                       <InputField
-                        label="Girl's Father/Guardian Name"
+                        label={boyT('childFrom')}
                         name="childFrom"
                         register={register}
                         errors={errors}
@@ -558,21 +601,21 @@ I also declare that the above information given by me is true, complete and corr
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <InputField
-                        label="Ramaini Siri No."
+                        label={commonT('ramainSiriNo')}
                         name="ramainSiriNo"
                         register={register}
                         errors={errors}
                         placeholder="Enter serial number"
                       />
                       <InputField
-                        label="Location"
+                        label={commonT('location')}
                         name="location"
                         register={register}
                         errors={errors}
                         placeholder="Enter location"
                       />
                       <InputField
-                        label="Date of Ramaini"
+                        label={commonT('dateOfRamaini')}
                         name="dateOfRamaini"
                         type="date"
                         register={register}
@@ -586,7 +629,7 @@ I also declare that the above information given by me is true, complete and corr
                       onClick={generateDeclaration}
                       className="px-8 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition duration-300"
                     >
-                      Generate Declaration
+                      {commonT('generateDeclaration')}
                     </button>
                   </div>
                 </>
@@ -594,7 +637,7 @@ I also declare that the above information given by me is true, complete and corr
                 <div className="space-y-4">
                   <div className="p-4 bg-white border border-gray-200 rounded-lg">
                     <h3 className="font-medium text-gray-800 mb-3">
-                      Generated Declaration:
+                      {commonT('generatedDeclaration')}
                     </h3>
                     <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
                       {generatedDeclaration}
@@ -615,9 +658,7 @@ I also declare that the above information given by me is true, complete and corr
                       htmlFor="acceptFinalDeclaration"
                       className="text-sm text-gray-700 font-medium"
                     >
-                      I accept and agree to the above declaration. All the
-                      information provided is true and correct to the best of my
-                      knowledge.
+                      {commonT('acceptFinalDeclaration')}
                     </label>
                   </div>
 
@@ -629,7 +670,7 @@ I also declare that the above information given by me is true, complete and corr
                     }}
                     className="text-sm text-red-600 hover:text-red-800 underline"
                   >
-                    Edit Declaration Details
+                    {commonT('editDeclarationDetails')}
                   </button>
                 </div>
               )}
@@ -638,13 +679,15 @@ I also declare that the above information given by me is true, complete and corr
             {/* Important Questions */}
             <div className="bg-red-50 p-4 rounded-lg mb-6">
               <h2 className="text-lg font-medium text-red-800 mb-3">
-                {t('questions')}
+                {commonT('questions')}
               </h2>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="text-red-600 mt-1">•</div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium mb-2">{t('isAdult')}</p>
+                    <p className="text-sm font-medium mb-2">
+                      {boyT('isAdult')}
+                    </p>
                     <div className="flex space-x-4">
                       <label className="inline-flex items-center">
                         <input
@@ -653,7 +696,7 @@ I also declare that the above information given by me is true, complete and corr
                           value="Yes"
                           className="text-red-600 focus:ring-red-500"
                         />
-                        <span className="ml-2 text-sm">{t('yes')}</span>
+                        <span className="ml-2 text-sm">{commonT('yes')}</span>
                       </label>
                       <label className="inline-flex items-center">
                         <input
@@ -662,12 +705,12 @@ I also declare that the above information given by me is true, complete and corr
                           value="No"
                           className="text-red-600 focus:ring-red-500"
                         />
-                        <span className="ml-2 text-sm">{t('no')}</span>
+                        <span className="ml-2 text-sm">{commonT('no')}</span>
                       </label>
                     </div>
                     {errors.isAdult && (
                       <p className="text-red-500 text-xs mt-1">
-                        {t('requiredField')}
+                        {commonT('requiredField')}
                       </p>
                     )}
                   </div>
@@ -677,7 +720,7 @@ I also declare that the above information given by me is true, complete and corr
                   <div className="text-red-600 mt-1">•</div>
                   <div className="flex-1">
                     <p className="text-sm font-medium mb-2">
-                      {t('isDowryFree')}
+                      {commonT('isDowryFree')}
                     </p>
                     <div className="flex space-x-4">
                       <label className="inline-flex items-center">
@@ -687,7 +730,7 @@ I also declare that the above information given by me is true, complete and corr
                           value="Yes"
                           className="text-red-600 focus:ring-red-500"
                         />
-                        <span className="ml-2 text-sm">{t('yes')}</span>
+                        <span className="ml-2 text-sm">{commonT('yes')}</span>
                       </label>
                       <label className="inline-flex items-center">
                         <input
@@ -696,12 +739,12 @@ I also declare that the above information given by me is true, complete and corr
                           value="No"
                           className="text-red-600 focus:ring-red-500"
                         />
-                        <span className="ml-2 text-sm">{t('no')}</span>
+                        <span className="ml-2 text-sm">{commonT('no')}</span>
                       </label>
                     </div>
                     {errors.isDowryFree && (
                       <p className="text-red-500 text-xs mt-1">
-                        {t('requiredField')}
+                        {commonT('requiredField')}
                       </p>
                     )}
                   </div>
@@ -711,7 +754,7 @@ I also declare that the above information given by me is true, complete and corr
                   <div className="text-red-600 mt-1">•</div>
                   <div className="flex-1">
                     <p className="text-sm font-medium mb-2">
-                      {t('agreeWithRules')}
+                      {commonT('agreeWithRules')}
                     </p>
                     <div className="flex space-x-4">
                       <label className="inline-flex items-center">
@@ -721,7 +764,7 @@ I also declare that the above information given by me is true, complete and corr
                           value="Yes"
                           className="text-red-600 focus:ring-red-500"
                         />
-                        <span className="ml-2 text-sm">{t('yes')}</span>
+                        <span className="ml-2 text-sm">{commonT('yes')}</span>
                       </label>
                       <label className="inline-flex items-center">
                         <input
@@ -730,12 +773,12 @@ I also declare that the above information given by me is true, complete and corr
                           value="No"
                           className="text-red-600 focus:ring-red-500"
                         />
-                        <span className="ml-2 text-sm">{t('no')}</span>
+                        <span className="ml-2 text-sm">{commonT('no')}</span>
                       </label>
                     </div>
                     {errors.agreeWithRules && (
                       <p className="text-red-500 text-xs mt-1">
-                        {t('requiredField')}
+                        {commonT('requiredField')}
                       </p>
                     )}
                   </div>
@@ -745,7 +788,7 @@ I also declare that the above information given by me is true, complete and corr
                   <div className="text-red-600 mt-1">•</div>
                   <div className="flex-1">
                     <p className="text-sm font-medium mb-2">
-                      {t('isAlreadyMarried')}
+                      {boyT('isAlreadyMarried')}
                     </p>
                     <div className="flex space-x-4">
                       <label className="inline-flex items-center">
@@ -755,7 +798,7 @@ I also declare that the above information given by me is true, complete and corr
                           value="Yes"
                           className="text-red-600 focus:ring-red-500"
                         />
-                        <span className="ml-2 text-sm">{t('yes')}</span>
+                        <span className="ml-2 text-sm">{commonT('yes')}</span>
                       </label>
                       <label className="inline-flex items-center">
                         <input
@@ -764,16 +807,15 @@ I also declare that the above information given by me is true, complete and corr
                           value="No"
                           className="text-red-600 focus:ring-red-500"
                         />
-                        <span className="ml-2 text-sm">{t('no')}</span>
+                        <span className="ml-2 text-sm">{commonT('no')}</span>
                       </label>
                     </div>
                     <p className="text-xs mt-2 text-gray-600 italic">
-                      (If yes then it is mandatory to attach the divorce papers
-                      with the form, otherwise Ramaini will not be done.)
+                      {commonT('divorceWarning')}
                     </p>
                     {errors.isAlreadyMarried && (
                       <p className="text-red-500 text-xs mt-1">
-                        {t('requiredField')}
+                        {commonT('requiredField')}
                       </p>
                     )}
                   </div>
@@ -781,15 +823,96 @@ I also declare that the above information given by me is true, complete and corr
               </div>
             </div>
 
+            {/* Document Upload Section */}
+            <div className="bg-red-50 p-4 rounded-lg mb-6">
+              <h2 className="text-lg font-medium text-red-800 mb-3">
+                {commonT('requiredDocuments')}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Aadhar Card Upload */}
+                <DocumentUpload
+                  id="aadharCard"
+                  title={commonT('aadharCard')}
+                  description={commonT('aadharCardDesc')}
+                  onChange={(e) => handleFileChange(e, setAadharCard)}
+                  preview={aadharCard.preview}
+                  isRequired={true}
+                  acceptTypes="image/jpeg,image/png,application/pdf"
+                />
+
+                {/* 10th Marksheet Upload */}
+                <DocumentUpload
+                  id="marksheet"
+                  title={commonT('marksheet')}
+                  description={commonT('marksheetDesc')}
+                  onChange={(e) => handleFileChange(e, setMarksheet)}
+                  preview={marksheet.preview}
+                  isRequired={true}
+                  acceptTypes="image/jpeg,image/png,application/pdf"
+                />
+
+                {/* Namdikasha Form Upload */}
+                <DocumentUpload
+                  id="namdikashaForm"
+                  title={commonT('namdikashaForm')}
+                  description={commonT('namdikashaFormDesc')}
+                  onChange={(e) => handleFileChange(e, setNamdikashaForm)}
+                  preview={namdikashaForm.preview}
+                  isRequired={false}
+                  acceptTypes="image/jpeg,image/png,application/pdf"
+                />
+
+                {/* Conditional Divorce Certificate Upload */}
+                {isAlreadyMarried === 'Yes' && (
+                  <DocumentUpload
+                    id="divorceCertificate"
+                    title={commonT('divorceCertificate')}
+                    description={commonT('divorceCertificateDesc')}
+                    onChange={(e) => handleFileChange(e, setDivorceCertificate)}
+                    preview={divorceCertificate.preview}
+                    isRequired={true}
+                    acceptTypes="image/jpeg,image/png,application/pdf"
+                  />
+                )}
+              </div>
+
+              {/* Document Requirements Info Box */}
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-100 rounded-md">
+                <h3 className="text-sm font-medium text-yellow-800 mb-1">
+                  {commonT('documentGuidelines')}
+                </h3>
+                <ul className="list-disc list-inside text-xs text-yellow-700 space-y-1">
+                  <li>{commonT('allDocumentsReadable')}</li>
+                  <li>{commonT('fileSizeLimit')}</li>
+                  <li>{commonT('acceptedFormats')}</li>
+                  <li>{commonT('noEditedDocs')}</li>
+                  {isAlreadyMarried === 'Yes' && (
+                    <li className="font-medium">
+                      {commonT('divorceCertValid')}
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </div>
+            {/* Document validation error message */}
+            {(!aadharCard.file ||
+              !marksheet.file ||
+              (isAlreadyMarried === 'Yes' && !divorceCertificate.file)) && (
+              <div className="text-center mt-2">
+                <p className="text-xs text-red-600">
+                  {commonT('uploadRequiredDocs')}
+                </p>
+              </div>
+            )}
             {/* Signatures */}
             <div className="bg-red-50 p-4 rounded-lg mb-6">
               <h2 className="text-lg font-medium text-red-800 mb-3">
-                {t('signatureSection')}
+                {commonT('signatureSection')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="text-sm font-medium text-gray-700 mb-2">
-                    {t('familySignature')}
+                    {commonT('familySignature')}
                   </h3>
                   <FileUpload
                     id="familySignature"
@@ -800,7 +923,7 @@ I also declare that the above information given by me is true, complete and corr
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-700 mb-2">
-                    {t('boySignature')}
+                    {boyT('signature')}
                   </h3>
                   <FileUpload
                     id="boySignature"
@@ -817,10 +940,20 @@ I also declare that the above information given by me is true, complete and corr
               <button
                 type="submit"
                 disabled={
-                  isSubmitting || !isDeclared || !acceptFinalDeclaration
+                  isSubmitting ||
+                  !isDeclared ||
+                  !acceptFinalDeclaration ||
+                  !aadharCard.file ||
+                  !marksheet.file ||
+                  (isAlreadyMarried === 'Yes' && !divorceCertificate.file)
                 }
                 className={`px-12 py-3 font-medium rounded-lg shadow-lg transition duration-300 transform ${
-                  isSubmitting || !isDeclared || !acceptFinalDeclaration
+                  isSubmitting ||
+                  !isDeclared ||
+                  !acceptFinalDeclaration ||
+                  !aadharCard.file ||
+                  !marksheet.file ||
+                  (isAlreadyMarried === 'Yes' && !divorceCertificate.file)
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-red-600 hover:bg-red-700 hover:scale-105 text-white'
                 }`}
@@ -850,7 +983,7 @@ I also declare that the above information given by me is true, complete and corr
                     Submitting...
                   </div>
                 ) : (
-                  t('submit')
+                  commonT('submit')
                 )}
               </button>
             </div>
@@ -934,7 +1067,7 @@ I also declare that the above information given by me is true, complete and corr
             {/* Form note */}
             <div className="text-center text-xs text-gray-500 mt-6 p-3 bg-gray-50 rounded">
               <p className="font-medium mb-1">Required Documents:</p>
-              <p>{t('note')}</p>
+              <p>{commonT('note')}</p>
             </div>
           </form>
         </div>
