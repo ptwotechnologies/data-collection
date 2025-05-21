@@ -715,7 +715,7 @@ const RamaniGirlList = () => {
                   <div>
                     <p className="text-sm text-purple-300">Age</p>
                     <p className="text-amber-100">
-                      {calculateAge(selectedGirl.girlDOB)} years
+                      {selectedGirl.girlDOB} years
                     </p>
                   </div>
                   <div>
