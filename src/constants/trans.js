@@ -101,6 +101,11 @@ i18n.use(initReactI18next).init({
         girlFamilyInfo: "Girl's family information", // Hindi: "लड़की के परिवार की जानकारी"
         boyFamilyInfo: "Boy's family information", // Hindi: "लड़के के परिवार की जानकारी"
         requiredDocumentsHeader: 'Required Documents:',
+        selfDeclaration: 'Self Declaration',
+        selfDeclarationDetails:
+          'I wish to marry with full consent and following all legal requirements.',
+        selfDeclarantInfo:
+          'I am {{name}}, son/daughter of {{fatherName}}, wanting to marry with the consent of {{childFrom}}.',
       },
 
       // Girl-specific translations
@@ -231,6 +236,11 @@ i18n.use(initReactI18next).init({
           'तलाक प्रमाणपत्र कानूनी रूप से मान्य और सक्षम प्राधिकारी द्वारा जारी किया गया होना चाहिए',
         uploadRequiredDocs:
           'कृपया जमा करने से पहले सभी आवश्यक दस्तावेज अपलोड करें',
+        selfDeclaration: 'स्वयं की घोषणा',
+        selfDeclarationDetails:
+          'मैं पूरी सहमति और सभी कानूनी आवश्यकताओं का पालन करते हुए शादी करना चाहता/चाहती हूँ।',
+        selfDeclarantInfo:
+          'मैं {{name}}, {{fatherName}} का पुत्र/पुत्री, {{childFrom}} की सहमति से विवाह करना चाहता/चाहती हूँ।',
       },
 
       // Hindi girl-specific translations

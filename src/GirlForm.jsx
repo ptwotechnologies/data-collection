@@ -77,39 +77,32 @@ export default function GirlRamainiForm() {
     }
   };
 
-  // Generate declaration based on form data
+  // Girl form - Declaration generation function
   const generateDeclaration = () => {
     const data = getValues();
-    const declaration = `I am Mr./Mrs. ${
-      data.girlFatherName || "[Father's Name]"
-    }, son/daughter of ${
-      data.declarantSon || "[Grandfather's Name]"
-    }, resident of ${data.fullAddress || '[Address]'}, ${
-      data.district || '[District]'
-    }, ${data.state || '[State]'}. I want my daughter ${
+    const declaration = `I am ${
       data.girlName || "[Girl's Name]"
-    } from ${data.state || '[State]'} to marry.
+    }, daughter of ${data.girlFatherName || "[Father's Name]"}, resident of ${
+      data.fullAddress || '[Address]'
+    }, ${data.district || '[District]'}, ${data.state || '[State]'}.
 
-I hereby declare that my daughter ${
-      data.girlName || "[Girl's Name]"
-    } with the consent of ${
+I hereby declare that I wish to marry with the consent of ${
       data.childFrom || "[Boy's Father/Guardian Name]"
     } from ${
       data.childDistrict || data.district || '[District]'
-    } district will perform Ramaini Siri No. ${
+    } district and will perform Ramaini Siri No. ${
       data.ramainSiriNo || '[Serial Number]'
     } at Location: ${data.location || '[Location]'} on date ${
       data.dateOfRamaini || '[Date]'
     }.
 
-I am getting my daughter married (Ramaini) with my full consent. I assure that the bride and groom fulfill the age limit prescribed under the Indian Marriage Act, 1955 and all the necessary legal procedures have been followed for this marriage/Ramaini.
+I am getting married (Ramaini) with my full consent. I assure that both myself and the groom fulfill the age limit prescribed under the Indian Marriage Act, 1955 and all the necessary legal procedures have been followed for this marriage/Ramaini.
 
 I also declare that the above information given by me is true, complete and correct. If any error or incorrectness is found in my declaration, I will be fully responsible for it.`;
 
     setGeneratedDeclaration(declaration);
     setIsDeclared(true);
   };
-
   // Handle form submission - Direct form submit handler
   // Handle form submission - Direct form submit handler
   const handleFormSubmit = async (event) => {
