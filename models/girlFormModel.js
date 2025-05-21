@@ -15,6 +15,7 @@ const GirlFormSchema = new mongoose.Schema(
     district: { type: String, required: true },
     state: { type: String, required: true },
     mobileNumber: { type: String, required: true },
+    boymobileNumber: { type: String },
 
     // Religious Information (optional)
     firstNameReceiptDate: { type: String },
@@ -36,16 +37,33 @@ const GirlFormSchema = new mongoose.Schema(
     agreeWithRules: { type: String, required: true },
     isAlreadyMarried: { type: String, required: true },
 
-    // File uploads
+    // File uploads - Basic photos
     girlPhoto: { type: String },
     boyPhoto: { type: String },
     girlSignature: { type: String },
     familySignature: { type: String },
+
+    // New document uploads
+    aadharCard: { type: String, required: true },
+    marksheet: { type: String, required: true },
+    namdikashaForm: { type: String }, // Optional
+    divorceCertificate: { type: String }, // Required only if isAlreadyMarried is "Yes"
   },
   {
     timestamps: true,
   }
 );
+
+// Custom validation for divorce certificate
+GirlFormSchema.pre('validate', function (next) {
+  if (this.isAlreadyMarried === 'Yes' && !this.divorceCertificate) {
+    this.invalidate(
+      'divorceCertificate',
+      'Divorce certificate is required for previously married individuals'
+    );
+  }
+  next();
+});
 
 const GirlForm = mongoose.model('GirlForm', GirlFormSchema);
 export default GirlForm;

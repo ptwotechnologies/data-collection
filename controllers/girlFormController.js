@@ -12,9 +12,16 @@ export const submitGirlForm = async (req, res) => {
     const girlSignature = req.files?.girlSignature?.[0]?.buffer;
     const familySignature = req.files?.familySignature?.[0]?.buffer;
 
+    // Document file uploads
+    const aadharCard = req.files?.aadharCard?.[0]?.buffer;
+    const marksheet = req.files?.marksheet?.[0]?.buffer;
+    const namdikashaForm = req.files?.namdikashaForm?.[0]?.buffer;
+    const divorceCertificate = req.files?.divorceCertificate?.[0]?.buffer;
+
     // Upload files to Cloudinary in parallel to improve performance
     const uploadPromises = [];
 
+    // Original file uploads
     if (girlPhoto) {
       uploadPromises.push(
         uploadOnCloudinary(girlPhoto).then((url) => ({ key: 'girlPhoto', url }))
@@ -37,6 +44,37 @@ export const submitGirlForm = async (req, res) => {
       uploadPromises.push(
         uploadOnCloudinary(familySignature).then((url) => ({
           key: 'familySignature',
+          url,
+        }))
+      );
+    }
+
+    // Document uploads
+    if (aadharCard) {
+      uploadPromises.push(
+        uploadOnCloudinary(aadharCard).then((url) => ({
+          key: 'aadharCard',
+          url,
+        }))
+      );
+    }
+    if (marksheet) {
+      uploadPromises.push(
+        uploadOnCloudinary(marksheet).then((url) => ({ key: 'marksheet', url }))
+      );
+    }
+    if (namdikashaForm) {
+      uploadPromises.push(
+        uploadOnCloudinary(namdikashaForm).then((url) => ({
+          key: 'namdikashaForm',
+          url,
+        }))
+      );
+    }
+    if (divorceCertificate) {
+      uploadPromises.push(
+        uploadOnCloudinary(divorceCertificate).then((url) => ({
+          key: 'divorceCertificate',
           url,
         }))
       );

@@ -5,17 +5,30 @@ import { submitGirlForm } from '../controllers/girlFormController.js';
 import GirlForm from '../models/girlFormModel.js';
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB file size limit
+  },
+});
+
 const router = express.Router();
 
-// Submission route
+// Submission route with updated file fields
 router.post(
   '/submit',
   upload.fields([
+    // Basic photos
     { name: 'girlPhoto', maxCount: 1 },
     { name: 'boyPhoto', maxCount: 1 },
     { name: 'girlSignature', maxCount: 1 },
     { name: 'familySignature', maxCount: 1 },
+
+    // Required documents
+    { name: 'aadharCard', maxCount: 1 },
+    { name: 'marksheet', maxCount: 1 },
+    { name: 'namdikashaForm', maxCount: 1 },
+    { name: 'divorceCertificate', maxCount: 1 },
   ]),
   submitGirlForm
 );
@@ -54,7 +67,7 @@ router.get('/search', async (req, res) => {
   }
 });
 
-// New route: Get all girl form data
+// Get all girl form data
 router.get('/all', async (req, res) => {
   try {
     const allGirlForms = await GirlForm.find().sort({ createdAt: -1 }); // latest first
@@ -68,6 +81,31 @@ router.get('/all', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve data',
+    });
+  }
+});
+
+// Delete girl by ID
+router.delete('/:id', async (req, res) => {
+  try {
+    const deletedGirl = await GirlForm.findByIdAndDelete(req.params.id);
+
+    if (!deletedGirl) {
+      return res.status(404).json({
+        success: false,
+        message: 'Girl not found',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Girl deleted successfully',
+    });
+  } catch (error) {
+    console.error('Delete error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete girl',
     });
   }
 });

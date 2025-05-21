@@ -6,15 +6,20 @@ export const submitBoyForm = async (req, res) => {
     console.log('Form submission started...');
     const formData = req.body;
 
+    // Initialize uploadPromises array before using it
+    const uploadPromises = [];
+
     // File upload handling with parallel uploads
     const boyPhoto = req.files?.boyPhoto?.[0]?.buffer;
     const girlPhoto = req.files?.girlPhoto?.[0]?.buffer;
     const boySignature = req.files?.boySignature?.[0]?.buffer;
     const familySignature = req.files?.familySignature?.[0]?.buffer;
+    const aadharCard = req.files?.aadharCard?.[0]?.buffer;
+    const marksheet = req.files?.marksheet?.[0]?.buffer;
+    const namdikashaForm = req.files?.namdikashaForm?.[0]?.buffer;
+    const divorceCertificate = req.files?.divorceCertificate?.[0]?.buffer;
 
-    // Upload files to Cloudinary in parallel to improve performance
-    const uploadPromises = [];
-
+    // Add basic photos to upload promises
     if (boyPhoto) {
       uploadPromises.push(
         uploadOnCloudinary(boyPhoto).then((url) => ({ key: 'boyPhoto', url }))
@@ -37,6 +42,37 @@ export const submitBoyForm = async (req, res) => {
       uploadPromises.push(
         uploadOnCloudinary(familySignature).then((url) => ({
           key: 'familySignature',
+          url,
+        }))
+      );
+    }
+
+    // Add documents to upload promises
+    if (aadharCard) {
+      uploadPromises.push(
+        uploadOnCloudinary(aadharCard).then((url) => ({
+          key: 'aadharCard',
+          url,
+        }))
+      );
+    }
+    if (marksheet) {
+      uploadPromises.push(
+        uploadOnCloudinary(marksheet).then((url) => ({ key: 'marksheet', url }))
+      );
+    }
+    if (namdikashaForm) {
+      uploadPromises.push(
+        uploadOnCloudinary(namdikashaForm).then((url) => ({
+          key: 'namdikashaForm',
+          url,
+        }))
+      );
+    }
+    if (divorceCertificate) {
+      uploadPromises.push(
+        uploadOnCloudinary(divorceCertificate).then((url) => ({
+          key: 'divorceCertificate',
           url,
         }))
       );

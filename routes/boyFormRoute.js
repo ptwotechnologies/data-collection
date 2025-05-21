@@ -10,19 +10,26 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-// Existing submission route
+// Submission route with updated file fields
 router.post(
   '/submit',
   upload.fields([
+    // Basic photos
     { name: 'boyPhoto', maxCount: 1 },
     { name: 'girlPhoto', maxCount: 1 },
     { name: 'boySignature', maxCount: 1 },
     { name: 'familySignature', maxCount: 1 },
+
+    // Required documents
+    { name: 'aadharCard', maxCount: 1 },
+    { name: 'marksheet', maxCount: 1 },
+    { name: 'namdikashaForm', maxCount: 1 },
+    { name: 'divorceCertificate', maxCount: 1 },
   ]),
   submitBoyForm
 );
 
-// New search route
+// Search by mobile number
 router.get('/search', async (req, res) => {
   const { mobileNumber } = req.query;
 
@@ -56,6 +63,7 @@ router.get('/search', async (req, res) => {
   }
 });
 
+// Get all boy form data
 router.get('/all', async (req, res) => {
   try {
     const allBoysForms = await BoyForm.find().sort({ createdAt: -1 }); // latest first
@@ -69,6 +77,31 @@ router.get('/all', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve data',
+    });
+  }
+});
+
+// Delete boy by ID
+router.delete('/:id', async (req, res) => {
+  try {
+    const deletedBoy = await BoyForm.findByIdAndDelete(req.params.id);
+
+    if (!deletedBoy) {
+      return res.status(404).json({
+        success: false,
+        message: 'Boy not found',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Boy deleted successfully',
+    });
+  } catch (error) {
+    console.error('Delete error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete boy',
     });
   }
 });

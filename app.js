@@ -26,7 +26,7 @@ app.use(
     origin: 'https://data-collection-virid-xi.vercel.app',
     allowedHeaders: ['Content-Type', 'Authorization'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    credentials: true, // Added this line to enable credentials
+    credentials: true,
   })
 );
 
