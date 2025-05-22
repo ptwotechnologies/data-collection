@@ -9,7 +9,7 @@ i18n.use(initReactI18next).init({
       // Common translations shared by both forms
       common: {
         title: 'Ramaini (Marriage) Registration Form',
-        subtitle: 'Glory to Bandichhod Satguru Rampal Ji Maharaj',
+        subtitle: 'Bandi Chhod Satguru Rampal Ji Maharaj Ki Jai',
         personalInfo: 'Personal Information',
         contactInfo: 'Contact Information',
         fullAddress: 'Full Address',
