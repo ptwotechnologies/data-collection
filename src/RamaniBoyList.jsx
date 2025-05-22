@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Download, Edit, Trash2, Grid, List } from 'lucide-react';
+import { Search, Download, Edit, Trash2, Grid, List, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Papa from 'papaparse';
 import { toast } from 'react-toastify';
@@ -509,7 +509,7 @@ const RamaniBoyList = () => {
                               {boy.boyFatherName || 'N/A'}
                             </td>
                             <td className="px-6 py-4 text-amber-100/80">
-                              {calculateAge(boy.boyDOB)} years
+                              {boy.boyAge} years
                             </td>
                             <td className="px-6 py-4 text-amber-100/80">
                               {boy.mobileNumber || 'N/A'}
@@ -648,7 +648,7 @@ const RamaniBoyList = () => {
               onClick={closeDetailsPanel}
               className="text-amber-300 hover:text-amber-200 transition-colors"
             >
-              <Edit size={24} />
+              <X size={24} />
             </button>
           </div>
 

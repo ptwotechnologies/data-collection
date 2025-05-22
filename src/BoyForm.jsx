@@ -913,6 +913,7 @@ I also declare that the above information given by me is true, complete and corr
                     label="uploadSignature"
                     onChange={(e) => handleFileChange(e, setFamilySignature)}
                     preview={familySignature.preview}
+                    acceptTypes="image/*"
                   />
                 </div>
                 <div>
@@ -924,6 +925,7 @@ I also declare that the above information given by me is true, complete and corr
                     label="uploadSignature"
                     onChange={(e) => handleFileChange(e, setBoySignature)}
                     preview={boySignature.preview}
+                    acceptTypes="image/*"
                   />
                 </div>
               </div>

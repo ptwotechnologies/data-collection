@@ -212,10 +212,10 @@ const MarriageCertificate = ({ boyData, girlData }) => {
               {/* Photo Section */}
               <View style={tw('border border-black p-2 mt-2 items-center')}>
                 <View
-                  style={tw(
-                    'border border-gray-400 items-center justify-center'
-                  )}
-                  style={{ width: 60, height: 80 }}
+                  style={[
+                    tw('border border-gray-400 items-center justify-center'),
+                    { width: 60, height: 80 },
+                  ]}
                 >
                   <Image
                     src={boyData?.boyPhoto || 'src/assets/dummy-person.jpg'}
@@ -285,10 +285,10 @@ const MarriageCertificate = ({ boyData, girlData }) => {
               {/* Photo Section */}
               <View style={tw('border border-black p-2 mt-2 items-center')}>
                 <View
-                  style={tw(
-                    'border border-gray-400 items-center justify-center'
-                  )}
-                  style={{ width: 60, height: 80 }}
+                  style={[
+                    tw('border border-gray-400 items-center justify-center'),
+                    { width: 60, height: 80 },
+                  ]}
                 >
                   <Image
                     src={girlData?.girlPhoto || 'src/assets/dummy-person.jpg'}
@@ -465,7 +465,7 @@ const MarriageCertificate = ({ boyData, girlData }) => {
                 लड़की (वधू) के हस्ताक्षर
               </Text>
 
-              {/* Girl's Signature Image */}
+              {/* Girl's Signature Image - FIXED */}
               <View style={tw('h-8 mb-3 items-center justify-center')}>
                 <Image
                   src={girlData?.girlSignature || 'src/assets/dummy-sign.png'}

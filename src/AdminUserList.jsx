@@ -8,6 +8,7 @@ import {
   Grid,
   List,
   Upload,
+  X,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Papa from 'papaparse';
@@ -702,7 +703,7 @@ const AdminUserList = () => {
               onClick={closeDetailsPanel}
               className="text-amber-300 hover:text-amber-200 transition-colors"
             >
-              <Edit size={24} />
+              <X size={24} />
             </button>
           </div>
 

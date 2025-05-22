@@ -16,7 +16,7 @@ export default function Header() {
         {/* Center content */}
         <div className="w-4/6 text-center">
           <h1 className="text-2xl font-bold mb-1">
-            सतलोक आश्रम टेणिशी सेवा, मुंडका
+            सतलोक आश्रम रमैणी सेवा, मुंडका
           </h1>
           <div className="text-lg mb-1">Mob : +91 92668-61466</div>
           <div className="text-lg mb-1">मुंडका, दिल्ली (110041)</div>

@@ -9,7 +9,7 @@ i18n.use(initReactI18next).init({
       // Common translations shared by both forms
       common: {
         title: 'Ramaini (Marriage) Registration Form',
-        subtitle: 'Jai Purnabrahma Kabir Saheb',
+        subtitle: 'Glory to Bandichhod Satguru Rampal Ji Maharaj',
         personalInfo: 'Personal Information',
         contactInfo: 'Contact Information',
         fullAddress: 'Full Address',
@@ -24,7 +24,6 @@ i18n.use(initReactI18next).init({
         satnamReceiptDate: 'Satnam Date',
         nameReceiptDate: 'Saarnam Date',
         abstractReceiptDate: 'Saar Shabd Date',
-        declaration: 'Declaration',
         declarantInfo:
           'I am {{name}}, {{relation}} of {{resident}}, wanting {{person}} from {{state}} to marry.',
         marriageDetails: 'Marriage Details',
@@ -106,6 +105,16 @@ i18n.use(initReactI18next).init({
           'I wish to marry with full consent and following all legal requirements.',
         selfDeclarantInfo:
           'I am {{name}}, son/daughter of {{fatherName}}, wanting to marry with the consent of {{childFrom}}.',
+        declaration: {
+          intro:
+            'I am {{name}}, {{relation}} of {{parentName}}, resident of {{address}}, {{district}}, {{state}}.',
+          consent:
+            'I hereby declare that I wish to marry with the consent of {{guardianName}} from {{guardianDistrict}} district and will perform Ramaini Siri No. {{siriNo}} at Location: {{location}} on date {{date}}.',
+          ageAssurance:
+            'I am getting married (Ramaini) with my full consent. I assure that both parties fulfill the age limit prescribed under the Indian Marriage Act, 1955 and all the necessary legal procedures have been followed for this marriage/Ramaini.',
+          truthStatement:
+            'I also declare that the above information given by me is true, complete and correct. If any error or incorrectness is found in my declaration, I will be fully responsible for it.',
+        },
       },
 
       // Girl-specific translations
@@ -134,8 +143,8 @@ i18n.use(initReactI18next).init({
         girlMobileNumber: "Girl's Mobile Number",
         childFrom: "Girl's Father/Guardian Name",
         isAdult:
-          'Has the boy attained the age of 21 years as per government rules?',
-        isAlreadyMarried: 'Is the girl already married?',
+          'Has the person attained the age of 21 years as per government rules?',
+        isAlreadyMarried: 'Is the person already married?',
       },
     },
 
@@ -143,7 +152,7 @@ i18n.use(initReactI18next).init({
       // Hindi common translations - replace the content in your i18n.js file
       common: {
         title: 'रमैनी (विवाह) पंजीकरण प्रपत्र',
-        subtitle: 'जय पूर्णब्रह्म कबीर साहेब',
+        subtitle: 'बंदी छोड़ सतगुरु रामपाल जी महाराज की जय',
         personalInfo: 'व्यक्तिगत जानकारी',
         contactInfo: 'संपर्क जानकारी',
         fullAddress: 'पूरा पता',
@@ -169,7 +178,6 @@ i18n.use(initReactI18next).init({
         satnamReceiptDate: 'सतनाम तिथि',
         nameReceiptDate: 'सारनाम तिथि',
         abstractReceiptDate: 'सार शब्द तिथि',
-        declaration: 'घोषणा',
         declarantInfo:
           'मैं {{name}}, {{resident}} का {{relation}}, {{state}} से {{person}} से विवाह करना चाहता हूं।',
         marriageDetails: 'विवाह विवरण',
@@ -241,6 +249,16 @@ i18n.use(initReactI18next).init({
           'मैं पूरी सहमति और सभी कानूनी आवश्यकताओं का पालन करते हुए शादी करना चाहता/चाहती हूँ।',
         selfDeclarantInfo:
           'मैं {{name}}, {{fatherName}} का पुत्र/पुत्री, {{childFrom}} की सहमति से विवाह करना चाहता/चाहती हूँ।',
+        declaration: {
+          intro:
+            'मैं {{name}}, {{parentName}} {{relation}}, निवासी {{address}}, {{district}}, {{state}} हूँ।',
+          consent:
+            'मैं एतद्द्वारा घोषणा करता/करती हूँ कि मैं {{guardianDistrict}} जिले के {{guardianName}} की सहमति से विवाह करना चाहता/चाहती हूँ और स्थान: {{location}} पर दिनांक {{date}} को रमैनी सिरी नंबर {{siriNo}} का आयोजन करूँगा/करूँगी।',
+          ageAssurance:
+            'मैं अपनी पूरी सहमति से विवाह (रमैनी) कर रहा/रही हूँ। मैं आश्वासन देता/देती हूँ कि दोनों पक्ष भारतीय विवाह अधिनियम, 1955 के तहत निर्धारित आयु सीमा को पूरा करते हैं और इस विवाह/रमैनी के लिए सभी आवश्यक कानूनी प्रक्रियाओं का पालन किया गया है।',
+          truthStatement:
+            'मैं यह भी घोषणा करता/करती हूँ कि मेरे द्वारा दी गई उपरोक्त जानकारी सत्य, पूर्ण और सही है। यदि मेरी घोषणा में कोई त्रुटि या गलती पाई जाती है, तो मैं इसके लिए पूरी तरह से जिम्मेदार होऊंगा/होऊंगी।',
+        },
       },
 
       // Hindi girl-specific translations
@@ -270,7 +288,7 @@ i18n.use(initReactI18next).init({
         childFrom: 'लड़की के पिता/अभिभावक का नाम',
         isAdult:
           'क्या लड़का सरकारी नियमों के अनुसार 21 वर्ष की आयु प्राप्त कर चुका है?',
-        isAlreadyMarried: 'क्या लड़की पहले से विवाहित है?',
+        isAlreadyMarried: 'क्या व्यक्ति पहले से विवाहित है?',
       },
     },
   },

@@ -42,6 +42,7 @@ export default function DownloadCertificate() {
             `Boy data error: ${err.response?.data?.message || err.message}`
           );
         });
+      console.log(boyResponse.data);
 
       if (!boyResponse.data.success) {
         setBoyData(null);
@@ -56,6 +57,8 @@ export default function DownloadCertificate() {
             `Girl data error: ${err.response?.data?.message || err.message}`
           );
         });
+
+      console.log(girlResponse.data);
 
       if (!girlResponse.data.success) {
         setGirlData(null);
