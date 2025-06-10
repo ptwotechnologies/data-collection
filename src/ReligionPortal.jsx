@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import RegisterModal from './RegisterModal';
 import LoginForm from './LoginForm';
-import bannerImage from './assets/banner.jpg';
+import bannerImage from './assets/banner.webp';
 
 import { useNavigate } from 'react-router-dom';
 export default function ReligiousPortal() {
@@ -52,18 +52,24 @@ export default function ReligiousPortal() {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-red-50">
+    <div className="relative h-screen w-full bg-red-50 overflow-hidden">
       {/* Desktop Layout (Side by side) */}
-      <div className="hidden md:flex min-h-screen w-full">
-        {/* Banner Image - Left Side (40% width) */}
-        <div
-          className="w-2/5 bg-cover bg-center"
-          style={{
-            backgroundImage: `url(${bannerImage})`,
-            borderTopRightRadius: '3rem',
-            borderBottomRightRadius: '3rem',
-          }}
-        />
+      <div className="hidden md:flex h-screen w-full">
+        {/* Banner Image - Left Side (40% width) - OPTIMIZED FOR LCP */}
+        <div className="w-2/5 h-full relative overflow-hidden rounded-tr-3xl rounded-br-3xl">
+          <img
+            src={bannerImage}
+            alt="Spiritual Journey Banner"
+            className="w-full h-full object-cover"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            onLoad={() => {
+              // Optional: Track LCP improvement
+              console.log('Banner image loaded');
+            }}
+          />
+        </div>
 
         {/* Content - Right Side (60% width) */}
         <div className="w-3/5 flex items-center justify-center p-8 bg-red-50">
@@ -184,16 +190,24 @@ export default function ReligiousPortal() {
 
       {/* Mobile Layout (Stack) */}
       <div className="md:hidden min-h-screen w-full flex flex-col">
-        {/* Banner Image - Top (75% height) */}
+        {/* Banner Image - Top (75% height) - OPTIMIZED FOR LCP */}
         <div
-          className="w-full bg-cover bg-center"
-          style={{
-            backgroundImage: `url(${bannerImage})`,
-            height: '75vh',
-            borderBottomLeftRadius: '3rem',
-            borderBottomRightRadius: '3rem',
-          }}
-        />
+          className="w-full relative overflow-hidden rounded-bl-3xl rounded-br-3xl"
+          style={{ height: '75vh' }}
+        >
+          <img
+            src={bannerImage}
+            alt="Spiritual Journey Banner"
+            className="w-full h-full object-cover"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            onLoad={() => {
+              // Optional: Track LCP improvement
+              console.log('Mobile banner image loaded');
+            }}
+          />
+        </div>
 
         {/* Content - Bottom (25% height) */}
         <div className="flex-1 flex items-center justify-center p-4 bg-red-50">
